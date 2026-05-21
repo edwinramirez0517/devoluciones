@@ -1,0 +1,2605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard de Análisis de Devoluciones de Mercadería - Tiendas El Compadre.">
+    <title>Dashboard de Devoluciones | Tiendas El Compadre</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js & PapaParse -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    
+    <style>
+        :root {
+            /* El Compadre Palette - Dark Mode (Default) */
+            --bg-gradient: linear-gradient(135deg, #05070f 0%, #0c1020 50%, #010c3d 100%);
+            --card-bg: rgba(12, 16, 32, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            
+            --accent-red: #E1251B; /* Rojo Compadre Pantone 485 C */
+            --accent-red-glow: rgba(225, 37, 27, 0.25);
+            --accent-blue: #012094; /* Azul Compadre Pantone 2756 C */
+            --accent-blue-glow: rgba(1, 32, 148, 0.35);
+            
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #E1251B;
+            --table-hdr-bg: rgba(1, 12, 61, 0.65);
+            --table-row-hover: rgba(255, 255, 255, 0.04);
+            --shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.55);
+        }
+
+        [data-theme="light"] {
+            /* El Compadre Palette - Light Mode */
+            --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 50%, #d1d5db 100%);
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(1, 32, 148, 0.1);
+            
+            --accent-red: #E1251B;
+            --accent-red-glow: rgba(225, 37, 27, 0.15);
+            --accent-blue: #012094;
+            --accent-blue-glow: rgba(1, 32, 148, 0.12);
+            
+            --text-main: #0c1020;
+            --text-muted: #6b7280;
+            
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #E1251B;
+            --table-hdr-bg: rgba(229, 231, 235, 0.95);
+            --table-row-hover: rgba(1, 32, 148, 0.03);
+            --shadow: 0 10px 30px 0 rgba(1, 32, 148, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 1.5rem;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1680px;
+            margin: 0 auto;
+        }
+
+        /* Glassmorphic Cards */
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        /* Dashboard Header Layout */
+        header.dashboard-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .header-top {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .header-top {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            height: 52px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-info h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--accent-red);
+        }
+
+        .brand-info p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            font-style: italic;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Filters Section */
+        .filters-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            width: 100%;
+            padding-top: 1rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .filter-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-select {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        [data-theme="light"] .filter-select {
+            background: #ffffff;
+            color: #0c1020;
+        }
+
+        .filter-select:focus {
+            border-color: var(--accent-red);
+        }
+
+        /* Button resets */
+        .btn-action {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action.btn-primary {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--accent-red-glow);
+        }
+
+        .btn-action.btn-primary:hover {
+            background: #ff3329;
+            box-shadow: 0 6px 16px rgba(225, 37, 27, 0.4);
+        }
+
+        .btn-action.btn-secondary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--accent-blue-glow);
+        }
+
+        .btn-action.btn-secondary:hover {
+            background: #022bc2;
+        }
+
+        .btn-action.btn-reset {
+            background: rgba(225, 37, 27, 0.1);
+            border-color: rgba(225, 37, 27, 0.3);
+            color: var(--accent-red);
+        }
+
+        .btn-action.btn-reset:hover {
+            background: var(--accent-red);
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--accent-red-glow);
+        }
+
+        /* Active Filter Badges Bar */
+        .active-filters-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            align-items: center;
+        }
+
+        .active-filter-badge {
+            background: var(--accent-blue-glow);
+            border: 1px solid var(--accent-blue);
+            color: var(--text-main);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .active-filter-badge.badge-red {
+            background: var(--accent-red-glow);
+            border-color: var(--accent-red);
+        }
+
+        .active-filter-badge span.close-badge {
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .active-filter-badge span.close-badge:hover {
+            color: var(--accent-red);
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .kpi-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .kpi-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            border-left: 5px solid var(--accent-blue);
+        }
+
+        .kpi-card.kpi-costo { border-left-color: var(--accent-red); }
+        .kpi-card.kpi-promedio { border-left-color: var(--warning); }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .kpi-value.val-unidades { color: var(--text-main); }
+        .kpi-value.val-costo { color: var(--accent-red); }
+        .kpi-value.val-promedio { color: var(--warning); }
+
+        .kpi-subtext {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Dashboard Main Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1200px) {
+            .dashboard-layout {
+                grid-template-columns: 3fr 2fr;
+            }
+        }
+
+        /* Section Title styling */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-header h2 img.mini-logo {
+            height: 20px;
+            width: auto;
+        }
+
+        /* Dynamic Table styling */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        table.dashboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        table.dashboard-table th {
+            background: var(--table-hdr-bg);
+            color: var(--text-main);
+            font-weight: 700;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        table.dashboard-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        table.dashboard-table tr:hover td {
+            background: var(--table-row-hover);
+        }
+
+        table.dashboard-table tr.totals-row td {
+            font-weight: 700;
+            background: rgba(1, 12, 61, 0.8);
+            border-bottom: double 3px var(--card-border);
+        }
+
+        .num-col {
+            text-align: right;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+        }
+
+        .text-bold {
+            font-weight: 600;
+        }
+
+        /* Tabs Buttons */
+        .tabs-buttons {
+            display: flex;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 0.2rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-red);
+            color: #ffffff;
+        }
+
+        /* Q&A Cards Section */
+        .qa-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .qa-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .qa-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .qa-card {
+            background: rgba(1, 12, 61, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 180px;
+        }
+
+        [data-theme="light"] .qa-card {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .qa-question {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--accent-red);
+            padding-left: 0.5rem;
+        }
+
+        .qa-badge {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent-red);
+            margin: 0.5rem 0;
+        }
+
+        .qa-answer {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Charts grid */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 1200px) {
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .chart-card {
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-box {
+            position: relative;
+            flex-grow: 1;
+            height: 320px;
+            width: 100%;
+        }
+
+        /* New Stores Section (Auditoría) */
+        .new-stores-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        [data-theme="light"] .new-stores-box {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .new-store-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--card-border);
+            border-radius: 4px;
+        }
+
+        .new-store-row:last-child {
+            border-bottom: none;
+        }
+
+        .new-store-row:hover {
+            background: var(--table-row-hover);
+        }
+
+        /* Floating Reset Filter Button */
+        .floating-reset {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 4px 20px rgba(225, 37, 27, 0.4);
+        }
+
+        /* Footer Status Indicator */
+        .footer-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        /* Alert Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(1, 12, 61, 0.95);
+            border: 1px solid var(--accent-red);
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            z-index: 9999;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        /* Custom Multiselect Dropdown Styling */
+        .multiselect-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .multiselect-header {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            min-height: 38px;
+        }
+
+        [data-theme="light"] .multiselect-header {
+            background: #ffffff;
+            color: #0c1020;
+        }
+
+        .multiselect-header:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .multiselect-arrow {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .multiselect-dropdown.open .multiselect-arrow {
+            transform: rotate(180deg);
+        }
+
+        .multiselect-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 240px;
+            overflow-y: auto;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            margin-top: 0.25rem;
+            z-index: 1010;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 0.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        [data-theme="light"] .multiselect-options {
+            background: #ffffff;
+            box-shadow: 0 10px 25px rgba(1, 32, 148, 0.15);
+        }
+
+        .multiselect-dropdown.open .multiselect-options {
+            display: block;
+        }
+
+        .multiselect-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        .multiselect-option:hover {
+            background: rgba(1, 32, 148, 0.25);
+        }
+
+        [data-theme="light"] .multiselect-option:hover {
+            background: rgba(1, 32, 148, 0.08);
+        }
+
+        .multiselect-option input[type="checkbox"] {
+            cursor: pointer;
+            accent-color: var(--accent-red);
+            width: 14px;
+            height: 14px;
+        }
+
+        .multiselect-option.disabled {
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        /* Sticky Filter Card */
+        .filters-card {
+            position: sticky;
+            top: 0.5rem;
+            z-index: 1005;
+            margin-bottom: 1.5rem;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .filters-card .filters-panel {
+            border-top: none;
+            padding-top: 0;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header class="glass-card dashboard-header" style="margin-bottom: 1rem; padding: 1.25rem 1.5rem;">
+            <div class="header-top">
+                <div class="brand-container">
+                    <img src="logo_1.png" alt="Logo El Compadre" class="brand-logo" id="header-logo">
+                    <div class="brand-info">
+                        <h1>AUDITORÍA DE DEVOLUCIONES</h1>
+                        <p id="slogan-text">"En precios y moda, el más padre"</p>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <button class="btn-action btn-reset" onclick="resetAllFilters()" id="reset-top-btn">
+                        🧹 Limpiar Filtros
+                    </button>
+                    <button class="btn-action" onclick="toggleTheme()" id="theme-btn">
+                        🌙
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sticky Filters Card -->
+        <section class="glass-card filters-card" id="sticky-filters-card">
+            <div class="filters-panel" style="border-top: none; padding-top: 0;">
+                <div class="filter-box">
+                    <span class="filter-label">Año</span>
+                    <div class="multiselect-dropdown" id="dropdown-year">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-year', event)">
+                            <span class="multiselect-title" id="title-year">Todos los Años</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-year">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Trimestre</span>
+                    <div class="multiselect-dropdown" id="dropdown-quarter">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-quarter', event)">
+                            <span class="multiselect-title" id="title-quarter">Todos los Trimestres</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-quarter">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Mes</span>
+                    <div class="multiselect-dropdown" id="dropdown-month">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-month', event)">
+                            <span class="multiselect-title" id="title-month">Todos los Meses</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-month">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">División</span>
+                    <div class="multiselect-dropdown" id="dropdown-division">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-division', event)">
+                            <span class="multiselect-title" id="title-division">Todas las Divisiones</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-division">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Tienda Origen</span>
+                    <div class="multiselect-dropdown" id="dropdown-store">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-store', event)">
+                            <span class="multiselect-title" id="title-store">Todas las Tiendas</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-store">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Empresa</span>
+                    <div class="multiselect-dropdown" id="dropdown-cia">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-cia', event)">
+                            <span class="multiselect-title" id="title-cia">Todas las CIAs</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-cia">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Recepción CD</span>
+                    <div class="multiselect-dropdown" id="dropdown-recepcion">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-recepcion', event)">
+                            <span class="multiselect-title" id="title-recepcion">Todos los Estados</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-recepcion">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Tipo Tienda</span>
+                    <div class="multiselect-dropdown" id="dropdown-tipo-tienda">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-tipo-tienda', event)">
+                            <span class="multiselect-title" id="title-tipo-tienda">Todos los Tipos</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-tipo-tienda">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <span class="filter-label">Motivos</span>
+                    <div class="multiselect-dropdown" id="dropdown-motivo">
+                        <div class="multiselect-header" onclick="toggleDropdown('dropdown-motivo', event)">
+                            <span class="multiselect-title" id="title-motivo">Todos los Motivos</span>
+                            <span class="multiselect-arrow">▼</span>
+                        </div>
+                        <div class="multiselect-options" id="options-motivo">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="active-filters-bar" id="active-badges-bar">
+                <!-- Badges will be generated here -->
+            </div>
+        </section>
+
+        <!-- KPI Row -->
+        <section class="kpi-grid">
+            <div class="glass-card kpi-card kpi-unidades">
+                <div class="kpi-header">
+                    <span class="kpi-label">Volumen Devuelto</span>
+                    <span>📦</span>
+                </div>
+                <div class="kpi-value val-unidades" id="total-unidades">0</div>
+                <div class="kpi-subtext" id="kpi-unidades-sub">Total unidades físicas devueltas</div>
+            </div>
+            <div class="glass-card kpi-card kpi-costo">
+                <div class="kpi-header">
+                    <span class="kpi-label">Costo Total Devolución</span>
+                    <span>L</span>
+                </div>
+                <div class="kpi-value val-costo" id="total-costo">L 0</div>
+                <div class="kpi-subtext" id="kpi-costo-sub">Costo total valorado (Lempiras)</div>
+            </div>
+            <div class="glass-card kpi-card kpi-promedio">
+                <div class="kpi-header">
+                    <span class="kpi-label">Costo Promedio Unitario</span>
+                    <span>🏷️</span>
+                </div>
+                <div class="kpi-value val-promedio" id="costo-promedio">L 0.00</div>
+                <div class="kpi-subtext" id="kpi-promedio-sub">Costo promedio por unidad devuelta</div>
+            </div>
+        </section>
+
+        <!-- Business Q&A (Directores Logística y Operaciones) -->
+        <section class="glass-card">
+            <div class="section-header">
+                <h2>
+                    <img src="logo_2.png" alt="" class="mini-logo">
+                    Preguntas de la Dirección & Respuestas Clave (Actualización Automática)
+                </h2>
+            </div>
+            <div class="qa-grid" id="qa-container">
+                <div class="qa-card">
+                    <div class="qa-question">¿Cuál es el costo total económico y el volumen de devolución?</div>
+                    <div class="qa-badge" id="qa-q1-badge">L 0</div>
+                    <div class="qa-answer" id="qa-q1-ans">Costo acumulado en el periodo filtrado.</div>
+                </div>
+                <div class="qa-card">
+                    <div class="qa-question">¿Cuáles son las causas principales (Pareto) de devoluciones?</div>
+                    <div class="qa-badge" id="qa-q2-badge">Cargando...</div>
+                    <div class="qa-answer" id="qa-q2-ans">Causas que concentran el mayor impacto de costo.</div>
+                </div>
+                <div class="qa-card">
+                    <div class="qa-question">¿Qué porcentaje del costo total ya se recepcionó en CEDI Central?</div>
+                    <div class="qa-badge" id="qa-q3-badge">0%</div>
+                    <div class="qa-answer" id="qa-q3-ans">Porcentaje ingresado vs mercadería pendiente/en tránsito.</div>
+                </div>
+                <div class="qa-card">
+                    <div class="qa-question">¿Cuál es el departamento (División) con mayor costo de devolución?</div>
+                    <div class="qa-badge" id="qa-q4-badge">Cargando...</div>
+                    <div class="qa-answer" id="qa-q4-ans">División que representa el mayor impacto de inventario.</div>
+                </div>
+                <div class="qa-card">
+                    <div class="qa-question">¿Qué tiendas son nuevas y comenzaron a devolver este año?</div>
+                    <div class="qa-badge" id="qa-q5-badge">0 Tiendas</div>
+                    <div class="qa-answer" id="qa-q5-ans">Sucursales con primer registro de devolución histórico.</div>
+                </div>
+                <div class="qa-card">
+                    <div class="qa-question">¿Cuál es el motivo de devolución con mayor costo unitario?</div>
+                    <div class="qa-badge" id="qa-q6-badge">Cargando...</div>
+                    <div class="qa-answer" id="qa-q6-ans">Causa que genera el mayor impacto de valor unitario.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard Section: Table and Trend -->
+        <section class="dashboard-layout">
+            
+            <!-- Table Section -->
+            <div class="glass-card" id="table-card">
+                <div class="section-header">
+                    <h2 id="table-title">Distribución por Motivo</h2>
+                    <div class="tabs-buttons">
+                        <button class="tab-btn active" onclick="switchTableTab('units')" id="tab-units-btn">Unidades</button>
+                        <button class="tab-btn" onclick="switchTableTab('cost')" id="tab-cost-btn">Costo (L)</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive" id="table-units-container">
+                    <table class="dashboard-table" id="table-units">
+                        <thead id="table-units-head">
+                            <!-- Dynamic -->
+                        </thead>
+                        <tbody id="table-units-body">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive" id="table-cost-container" style="display: none;">
+                    <table class="dashboard-table" id="table-cost">
+                        <thead id="table-cost-head">
+                            <!-- Dynamic -->
+                        </thead>
+                        <tbody id="table-cost-body">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Trend Chart Box -->
+            <div class="glass-card chart-card">
+                <div class="section-header">
+                    <h2>Evolución de Costos y Volumen</h2>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chart-trend"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Charts Container (Pareto & Division) -->
+        <section class="charts-container">
+            
+            <div class="glass-card chart-card">
+                <div class="section-header">
+                    <h2>Pareto de Motivos de Devolución (Haz clic para filtrar)</h2>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chart-pareto"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card chart-card">
+                <div class="section-header">
+                    <h2>Distribución de Devoluciones por División (Haz clic para filtrar)</h2>
+                </div>
+                <div class="chart-box">
+                    <canvas id="chart-division"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Top Stores & Motives Section -->
+        <section class="dashboard-layout">
+            
+            <!-- Stacked Top Stores Chart -->
+            <div class="glass-card chart-card">
+                <div class="section-header">
+                    <h2>Top 15 Sucursales y Motivos de Devolución (Haz clic para filtrar)</h2>
+                </div>
+                <div class="chart-box" style="height: 480px;">
+                    <canvas id="chart-stores"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Stores Table & New Stores Audit -->
+            <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
+                <div>
+                    <div class="section-header">
+                        <h2 id="top-stores-title">Top 15 Tiendas (Detalle Financiero)</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dashboard-table" id="table-stores">
+                            <thead id="table-stores-head">
+                                <tr>
+                                    <th>Tienda Origen</th>
+                                    <th class="num-col">Unidades</th>
+                                    <th class="num-col">Costo Total (L)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-stores-body">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-header">
+                        <h2>
+                            <img src="logo_2.png" alt="" class="mini-logo">
+                            Auditoría de Nuevas Sucursales con Devoluciones
+                        </h2>
+                    </div>
+                    <div class="new-stores-box" id="new-stores-list">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer-status">
+            <div>
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">Cargando base de datos dinámicos desde devoluciones.csv...</span>
+            </div>
+            <div>Dashboard El Compadre © 2026 | Logística & Operaciones</div>
+        </footer>
+
+    </div>
+
+    <!-- Floating Reset Button -->
+    <button class="btn-action btn-primary floating-reset" id="float-reset-btn" onclick="resetAllFilters()">
+        🧹 Restablecer Filtros
+    </button>
+
+    <!-- Toast message -->
+    <div class="toast" id="toast-message"></div>
+
+    <script>
+        // --- GLOBAL FILTER STATE (Multi-select Lists) ---
+        let selectedYears = [];
+        let selectedQuarters = [];
+        let selectedMonths = [];
+        let selectedDivisions = [];
+        let selectedCompanies = [];
+        let selectedReceptions = [];
+        let selectedStores = [];
+        let selectedMotivos = [];
+        let selectedStoreTypes = [];
+
+        let activeTableTab = 'units'; // 'units' or 'cost'
+        let rawData = [];
+        let storeFirstYear = {}; // Mapping to identify new stores: { "store_name": first_year_int }
+        let storeMapGlobal = {}; // Global reference for store reason details
+        let allDivisionsList = [];
+        let allStoresList = [];
+        
+        let activeTheme = 'dark';
+
+        // Chart.js Instances
+        let chartTrend = null;
+        let chartPareto = null;
+        let chartDivision = null;
+        let chartStores = null;
+
+        // Reason mapping and colors
+        const catMap = {
+            // Valores reales en el archivo CSV
+            "DAÑADOS": "DAÑADO",
+            "SOLICITADO ANALISIS (PARA RESURTIR DS)": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)",
+            "TEMPORADA": "TEMPORADA",
+            "EXCESO DE INVENTARIO": "EXCESO DE INVENTARIO",
+            "LENTA ROTACIÓN / REFRESCAMIENTO": "LENTA ROTACIÓN / REFRESCAMIENTO",
+            "AUTORIZADO POR GERENCIA": "AUTORIZADO POR GERENCIA",
+            "COLOR DE ETIQUETA": "COLOR DE ETIQUETA",
+
+            // Mapeos históricos / alternativos
+            "PARA RESURTIR": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)",
+            "DAÑADOS Y RECLAMOS": "DAÑADO"
+        };
+
+        const reasonColors = {
+            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": "#012094", // Azul Compadre
+            "TEMPORADA": "#3b82f6", // Celeste
+            "DAÑADO": "#f59e0b", // Naranja
+            "EXCESO DE INVENTARIO": "#E1251B", // Rojo Compadre
+            "LENTA ROTACIÓN / REFRESCAMIENTO": "#10b981", // Verde
+            "AUTORIZADO POR GERENCIA": "#8b5cf6", // Púrpura
+            "COLOR DE ETIQUETA": "#ec4899", // Rosa
+            "OTROS": "#6b7280" // Gris fallback
+        };
+
+        // Month Names Mapping
+        const monthNames = {
+            1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio",
+            7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+        };
+
+        const displayQuarters = ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"];
+
+        // 1. EMBEDDED OFFICIAL REPORT DATA (Matches Image Exactly)
+        const officialUnits = {
+            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": {"Q1 2025": 57503, "Q2 2025": 61073, "Q3 2025": 131746, "Q4 2025": 110635, "Q1 2026": 185119, "total": 546076, "%": 69.48, "prom": 96.08},
+            "TEMPORADA": {"Q1 2025": 9069, "Q2 2025": 5503, "Q3 2025": 8217, "Q4 2025": 13104, "Q1 2026": 71679, "total": 107572, "%": 13.69, "prom": 39.96},
+            "DAÑADO": {"Q1 2025": 10156, "Q2 2025": 10647, "Q3 2025": 10144, "Q4 2025": 7507, "Q1 2026": 14346, "total": 57592, "%": 7.33, "prom": 55.24},
+            "EXCESO DE INVENTARIO": {"Q1 2025": 17747, "Q2 2025": 2118, "Q3 2025": 6879, "Q4 2025": 1868, "Q1 2026": 12222, "total": 40834, "%": 5.20, "prom": 114.31},
+            "LENTA ROTACIÓN / REFRESCAMIENTO": {"Q1 2025": 9189, "Q2 2025": 3192, "Q3 2025": 1563, "Q4 2025": 2988, "Q1 2026": 19138, "total": 26863, "%": 3.42, "prom": 85.23},
+            "AUTORIZADO POR GERENCIA": {"Q1 2025": 1689, "Q2 2025": 613, "Q3 2025": 2595, "Q4 2025": 987, "Q1 2026": 1148, "total": 7032, "%": 0.89, "prom": 102.43}
+        };
+
+        const officialCosts = {
+            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": {"Q1 2025": 5653343, "Q2 2025": 6146505, "Q3 2025": 17879197, "Q4 2025": 11086194, "Q1 2026": 11704162, "total": 52469402, "%": 77.59},
+            "EXCESO DE INVENTARIO": {"Q1 2025": 1952970, "Q2 2025": 233739, "Q3 2025": 980949, "Q4 2025": 116646, "Q1 2026": 1383568, "total": 4667873, "%": 6.90},
+            "TEMPORADA": {"Q1 2025": 287256, "Q2 2025": 536747, "Q3 2025": 943680, "Q4 2025": 557594, "Q1 2026": 1973357, "total": 4298634, "%": 6.36},
+            "DAÑADO": {"Q1 2025": 671248, "Q2 2025": 599632, "Q3 2025": 566855, "Q4 2025": 429637, "Q1 2026": 914276, "total": 3181648, "%": 4.71},
+            "LENTA ROTACIÓN / REFRESCAMIENTO": {"Q1 2025": 786899, "Q2 2025": 287965, "Q3 2025": 130493, "Q4 2025": 268626, "Q1 2026": 815637, "total": 2289620, "%": 3.39},
+            "AUTORIZADO POR GERENCIA": {"Q1 2025": 193486, "Q2 2025": 60232, "Q3 2025": 273133, "Q4 2025": 126691, "Q1 2026": 66781, "total": 720322, "%": 1.07}
+        };
+
+        const officialDivisions = [
+            { name: "ROPA", units: 219060, cost: 31856851.68 },
+            { name: "CALZADO", units: 123115, cost: 17143540.35 },
+            { name: "CELEBRACIONES", units: 91093, cost: 1528901.12 },
+            { name: "ESCOLAR", units: 82621, cost: 3058144.38 },
+            { name: "INTERIOR DETALLE", units: 72043, cost: 867866.92 }
+        ];
+
+        const officialStores = [
+            {
+                "name": "TOCOA-AEC #2",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 117382.0,
+                    "TEMPORADA": 1371.0,
+                    "DAÑADO": 2016.0,
+                    "EXCESO DE INVENTARIO": 0.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 120769.0,
+                "totalCost": 1317041.16,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "MAYOREO MEGACARPA-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 24934.0,
+                    "TEMPORADA": 258.0,
+                    "DAÑADO": 1854.0,
+                    "EXCESO DE INVENTARIO": 4651.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 3537.0,
+                    "AUTORIZADO POR GERENCIA": 261.0
+                },
+                "totalUnits": 35495.0,
+                "totalCost": 1879899.19,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "MAYOREO SPS-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 15404.0,
+                    "TEMPORADA": 947.0,
+                    "DAÑADO": 2969.0,
+                    "EXCESO DE INVENTARIO": 3585.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 4670.0,
+                    "AUTORIZADO POR GERENCIA": 1688.0
+                },
+                "totalUnits": 29263.0,
+                "totalCost": 2407427.84,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "SAN ESTEBAN -AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 12823.0,
+                    "TEMPORADA": 3585.0,
+                    "DAÑADO": 1272.0,
+                    "EXCESO DE INVENTARIO": 7713.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 25393.0,
+                "totalCost": 2011096.23,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "OLANCHITO-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 20970.0,
+                    "TEMPORADA": 1326.0,
+                    "DAÑADO": 1581.0,
+                    "EXCESO DE INVENTARIO": 49.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 732.0
+                },
+                "totalUnits": 24658.0,
+                "totalCost": 2453655.73,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "SANTA CRUZ-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 14799.0,
+                    "TEMPORADA": 1868.0,
+                    "DAÑADO": 970.0,
+                    "EXCESO DE INVENTARIO": 120.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 17757.0,
+                "totalCost": 1126457.50,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "JESUS DE OTORO-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 7427.0,
+                    "TEMPORADA": 2844.0,
+                    "DAÑADO": 1140.0,
+                    "EXCESO DE INVENTARIO": 5753.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 17164.0,
+                "totalCost": 1800573.28,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "LAS VEGAS-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 12469.0,
+                    "TEMPORADA": 2984.0,
+                    "DAÑADO": 988.0,
+                    "EXCESO DE INVENTARIO": 0.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 16441.0,
+                "totalCost": 1685950.50,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "SABA-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 10987.0,
+                    "TEMPORADA": 3068.0,
+                    "DAÑADO": 2077.0,
+                    "EXCESO DE INVENTARIO": 0.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 16132.0,
+                "totalCost": 1044141.16,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            },
+            {
+                "name": "SIGUATEPEQUE-AEC",
+                "reasons": {
+                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 8020.0,
+                    "TEMPORADA": 3881.0,
+                    "DAÑADO": 1407.0,
+                    "EXCESO DE INVENTARIO": 2490.0,
+                    "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
+                    "AUTORIZADO POR GERENCIA": 0.0
+                },
+                "totalUnits": 15798.0,
+                "totalCost": 1626082.32,
+                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+            }
+        ];
+
+        // --- 2. THEME AND DYNAMIC OPTIONS SETUP ---
+        function toggleTheme() {
+            const body = document.body;
+            const themeBtn = document.getElementById('theme-btn');
+            if (activeTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                activeTheme = 'light';
+                themeBtn.innerText = '☀️';
+            } else {
+                body.removeAttribute('data-theme');
+                activeTheme = 'dark';
+                themeBtn.innerText = '🌙';
+            }
+            if (rawData.length > 0) {
+                renderDashboard();
+            } else {
+                renderStaticOfficialDashboard();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-message');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3500);
+        }
+
+        // Custom Date Parser for D/M/YYYY hh:mm
+        function parseDMY(dateStr) {
+            if (!dateStr) return null;
+            const cleanDate = dateStr.split(' ')[0];
+            const parts = cleanDate.split('/');
+            if (parts.length < 3) return null;
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+            const q = Math.ceil(month / 3);
+            return { day, month, year, quarter: `Q${q}` };
+        }
+
+        // --- 3. CSV DATA LOADING & FILTERS SETUP ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load initial static view based on the PDF/Image data
+            renderStaticOfficialDashboard();
+            
+            // Try loading CSV dynamically
+            Papa.parse("devoluciones.csv", {
+                download: true,
+                header: true,
+                delimiter: ";",
+                skipEmptyLines: true,
+                complete: function(results) {
+                    rawData = results.data;
+                    
+                    // Run initial scanner for store first return years
+                    scanStoresHistory();
+
+                    // Initialize multi-select list options from CSV data
+                    initializeFilterDropdowns();
+                    
+                    document.getElementById('status-dot').className = 'status-dot';
+                    document.getElementById('status-text').innerText = `CSV cargado dinámicamente con ${rawData.length.toLocaleString()} filas. Filtros 100% activos.`;
+                    showToast("Base de datos de El Compadre vinculada. ¡Filtros avanzados activados!");
+                    
+                    // Render Dashboard dynamically using the loaded CSV
+                    renderDashboard();
+                },
+                error: function(err) {
+                    console.log("Could not load CSV locally due to CORS or file missing. Staying in static report mode.", err);
+                    document.getElementById('status-dot').className = 'status-dot warning';
+                    document.getElementById('status-text').innerText = "Ejecutando en Modo Reporte (Fallback - Datos de Auditoría). Levanta un servidor local para explorar el CSV.";
+                }
+            });
+        });
+
+        // Scan the complete database to find the first year of returns for each store
+        function scanStoresHistory() {
+            storeFirstYear = {};
+            rawData.forEach(row => {
+                const store = row.Origen;
+                if (!store) return;
+                const dateObj = parseDMY(row.Fecha);
+                if (!dateObj) return;
+                const y = dateObj.year;
+                if (!storeFirstYear[store] || y < storeFirstYear[store]) {
+                    storeFirstYear[store] = y;
+                }
+            });
+        }
+
+        // --- Custom Dropdown Interactivity Helpers ---
+        function toggleDropdown(id, event) {
+            if (event) event.stopPropagation();
+            const dropdown = document.getElementById(id);
+            const isOpen = dropdown.classList.contains('open');
+            
+            document.querySelectorAll('.multiselect-dropdown').forEach(d => {
+                d.classList.remove('open');
+            });
+            
+            if (!isOpen) {
+                dropdown.classList.add('open');
+            }
+        }
+        
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.multiselect-dropdown').forEach(d => {
+                d.classList.remove('open');
+            });
+        });
+
+        function createDropdownOption(value, label, isChecked, isDisabled, onToggle) {
+            const div = document.createElement('div');
+            div.className = `multiselect-option ${isDisabled ? 'disabled' : ''}`;
+            if (isDisabled) div.title = "No disponible con los filtros actuales";
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = value;
+            checkbox.checked = isChecked;
+            if (isDisabled) checkbox.disabled = true;
+            checkbox.onchange = (e) => {
+                e.stopPropagation();
+                onToggle(value, checkbox.checked);
+            };
+
+            div.onclick = (e) => {
+                if (isDisabled) return;
+                checkbox.checked = !checkbox.checked;
+                onToggle(value, checkbox.checked);
+            };
+
+            const span = document.createElement('span');
+            span.innerText = label;
+
+            div.appendChild(checkbox);
+            div.appendChild(span);
+            return div;
+        }
+
+        function initializeFilterDropdowns() {
+            const divs = new Set();
+            const stores = new Set();
+            rawData.forEach(row => {
+                if (row.Division) divs.add(row.Division);
+                if (row.Origen) stores.add(row.Origen);
+            });
+            allDivisionsList = Array.from(divs).sort();
+            allStoresList = Array.from(stores).sort();
+
+            updateDropdownSelectors();
+        }
+
+        function getEnabledOptionsFor(type) {
+            if (rawData.length === 0) return [];
+            const enabledSet = new Set();
+            rawData.forEach(row => {
+                const dateObj = parseDMY(row.Fecha);
+                if (!dateObj) return;
+
+                const mappedReason = catMap[row.Categoria_Final];
+                if (!mappedReason) return; // Excluir "LAYOUT / INVENTARIO FÍSICO" y "CORRECCIÓN (MALA FACTURACIÓN)"
+
+                // Check match with all filters EXCEPT the one we are evaluating
+                let matches = true;
+                if (type !== 'year' && selectedYears.length > 0 && !selectedYears.includes(dateObj.year.toString())) matches = false;
+                if (type !== 'quarter' && selectedQuarters.length > 0 && !selectedQuarters.includes(dateObj.quarter)) matches = false;
+                if (type !== 'month' && selectedMonths.length > 0 && !selectedMonths.includes(dateObj.month.toString())) matches = false;
+                if (type !== 'division' && selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) matches = false;
+                if (type !== 'cia' && selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) matches = false;
+                if (type !== 'recepcion' && selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) matches = false;
+                if (type !== 'store' && selectedStores.length > 0 && !selectedStores.includes(row.Origen)) matches = false;
+                if (type !== 'motivo' && selectedMotivos.length > 0 && !selectedMotivos.includes(mappedReason)) matches = false;
+                if (type !== 'tipo_tienda' && selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) matches = false;
+
+                if (matches) {
+                    if (type === 'year') enabledSet.add(dateObj.year.toString());
+                    else if (type === 'quarter') enabledSet.add(dateObj.quarter);
+                    else if (type === 'month') enabledSet.add(dateObj.month.toString());
+                    else if (type === 'division') { if (row.Division) enabledSet.add(row.Division); }
+                    else if (type === 'store') { if (row.Origen) enabledSet.add(row.Origen); }
+                    else if (type === 'cia') enabledSet.add(row.CIA);
+                    else if (type === 'recepcion') enabledSet.add(row.RECEPCIONADO);
+                    else if (type === 'tipo_tienda') { if (row.tipo_tienda) enabledSet.add(row.tipo_tienda); }
+                    else if (type === 'motivo') enabledSet.add(mappedReason);
+                }
+            });
+            return Array.from(enabledSet);
+        }
+
+        function populateDropdownList(type, fullList, selectedList, allLabel, titleId, optionsId, labelMapping = null) {
+            const titleEl = document.getElementById(titleId);
+            const optionsEl = document.getElementById(optionsId);
+            if (!titleEl || !optionsEl) return;
+
+            // Update Header Title Text
+            if (selectedList.length === 0) {
+                titleEl.innerText = allLabel;
+            } else {
+                const labels = selectedList.map(v => labelMapping ? (labelMapping[v] || v) : v);
+                if (labels.length <= 2) {
+                    titleEl.innerText = labels.join(', ');
+                } else {
+                    const labelWord = allLabel.split(' ')[1] || "Seleccionados";
+                    titleEl.innerText = `${labelWord} (${labels.length})`;
+                }
+            }
+
+            optionsEl.innerHTML = '';
+
+            if (rawData.length === 0) {
+                fullList.forEach(val => {
+                    const label = labelMapping ? (labelMapping[val] || val) : val;
+                    const optDiv = createDropdownOption(val, label, false, true, () => {});
+                    optionsEl.appendChild(optDiv);
+                });
+                return;
+            }
+
+            const enabledList = getEnabledOptionsFor(type);
+
+            // Add "Seleccionar Todos" option
+            if (fullList.length > 1) {
+                const selectAllDiv = document.createElement('div');
+                selectAllDiv.className = 'multiselect-option';
+                selectAllDiv.style.borderBottom = '1px solid var(--card-border)';
+                selectAllDiv.style.fontWeight = 'bold';
+                
+                // Checked if all enabled options are selected
+                const enabledChecked = enabledList.length > 0 && enabledList.every(v => selectedList.includes(v));
+
+                const selectAllCb = document.createElement('input');
+                selectAllCb.type = 'checkbox';
+                selectAllCb.checked = enabledChecked;
+                selectAllCb.onchange = (e) => {
+                    e.stopPropagation();
+                    toggleAllFilterOptions(type, selectAllCb.checked);
+                };
+
+                selectAllDiv.onclick = (e) => {
+                    selectAllCb.checked = !selectAllCb.checked;
+                    toggleAllFilterOptions(type, selectAllCb.checked);
+                };
+
+                const selectAllSpan = document.createElement('span');
+                selectAllSpan.innerText = 'Seleccionar Todos (Filtrados)';
+                selectAllDiv.appendChild(selectAllCb);
+                selectAllDiv.appendChild(selectAllSpan);
+                optionsEl.appendChild(selectAllDiv);
+            }
+
+            fullList.forEach(val => {
+                const isChecked = selectedList.includes(val);
+                const isDisabled = !enabledList.includes(val) && !isChecked;
+                const label = labelMapping ? (labelMapping[val] || val) : val;
+                
+                const optDiv = createDropdownOption(val, label, isChecked, isDisabled, (v, checked) => {
+                    toggleFilterValue(type, v, checked);
+                });
+                optionsEl.appendChild(optDiv);
+            });
+        }
+
+        function updateDropdownSelectors() {
+            populateDropdownList('year', ['2024', '2025', '2026'], selectedYears, 'Todos los Años', 'title-year', 'options-year');
+            populateDropdownList('quarter', ['Q1', 'Q2', 'Q3', 'Q4'], selectedQuarters, 'Todos los Trimestres', 'title-quarter', 'options-quarter');
+            populateDropdownList('month', ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'], selectedMonths, 'Todos los Meses', 'title-month', 'options-month', monthNames);
+            populateDropdownList('division', allDivisionsList, selectedDivisions, 'Todas las Divisiones', 'title-division', 'options-division');
+            populateDropdownList('store', allStoresList, selectedStores, 'Todas las Tiendas', 'title-store', 'options-store');
+            populateDropdownList('cia', ['AEC', 'DS'], selectedCompanies, 'Todas las CIAs', 'title-cia', 'options-cia');
+            populateDropdownList('recepcion', ['RECEPCIONADO', 'NO RECEPCIONADO'], selectedReceptions, 'Todos los Estados', 'title-recepcion', 'options-recepcion');
+            populateDropdownList('tipo_tienda', ['DETALLE', 'MAYOREO'], selectedStoreTypes, 'Todos los Tipos', 'title-tipo-tienda', 'options-tipo-tienda');
+            
+            const allMotivos = Array.from(new Set(Object.values(catMap)));
+            populateDropdownList('motivo', allMotivos, selectedMotivos, 'Todos los Motivos', 'title-motivo', 'options-motivo');
+        }
+
+        function toggleFilterValue(type, value, isChecked) {
+            if (rawData.length === 0) {
+                showToast("Modo Estático de Auditoría. Carga el CSV para interactuar con los filtros.");
+                updateDropdownSelectors();
+                return;
+            }
+
+            let arr;
+            if (type === 'year') arr = selectedYears;
+            else if (type === 'quarter') arr = selectedQuarters;
+            else if (type === 'month') arr = selectedMonths;
+            else if (type === 'division') arr = selectedDivisions;
+            else if (type === 'store') arr = selectedStores;
+            else if (type === 'cia') arr = selectedCompanies;
+            else if (type === 'recepcion') arr = selectedReceptions;
+            else if (type === 'motivo') arr = selectedMotivos;
+            else if (type === 'tipo_tienda') arr = selectedStoreTypes;
+
+            if (isChecked) {
+                if (!arr.includes(value)) arr.push(value);
+            } else {
+                const idx = arr.indexOf(value);
+                if (idx > -1) arr.splice(idx, 1);
+            }
+
+            updateDropdownSelectors();
+            renderDashboard();
+        }
+
+        function toggleAllFilterOptions(type, isChecked) {
+            if (rawData.length === 0) return;
+            
+            let arr;
+            if (type === 'year') arr = selectedYears;
+            else if (type === 'quarter') arr = selectedQuarters;
+            else if (type === 'month') arr = selectedMonths;
+            else if (type === 'division') arr = selectedDivisions;
+            else if (type === 'store') arr = selectedStores;
+            else if (type === 'cia') arr = selectedCompanies;
+            else if (type === 'recepcion') arr = selectedReceptions;
+            else if (type === 'tipo_tienda') arr = selectedStoreTypes;
+            else if (type === 'motivo') arr = selectedMotivos;
+
+            arr.length = 0; // Clear it
+            if (isChecked) {
+                const enabledList = getEnabledOptionsFor(type);
+                enabledList.forEach(v => arr.push(v));
+            }
+
+            updateDropdownSelectors();
+            renderDashboard();
+        }
+
+        function resetAllFilters() {
+            selectedYears = [];
+            selectedQuarters = [];
+            selectedMonths = [];
+            selectedDivisions = [];
+            selectedCompanies = [];
+            selectedReceptions = [];
+            selectedStores = [];
+            selectedMotivos = [];
+            selectedStoreTypes = [];
+
+            showToast("Filtros restablecidos a la vista general.");
+            
+            if (rawData.length > 0) {
+                updateDropdownSelectors();
+                renderDashboard();
+            } else {
+                renderStaticOfficialDashboard();
+            }
+        }
+
+        function clearSpecificFilter(type, value) {
+            let arr;
+            if (type === 'year') arr = selectedYears;
+            else if (type === 'quarter') arr = selectedQuarters;
+            else if (type === 'month') arr = selectedMonths;
+            else if (type === 'division') arr = selectedDivisions;
+            else if (type === 'store') arr = selectedStores;
+            else if (type === 'cia') arr = selectedCompanies;
+            else if (type === 'recepcion') arr = selectedReceptions;
+            else if (type === 'motivo') arr = selectedMotivos;
+            else if (type === 'tipo_tienda') arr = selectedStoreTypes;
+
+            if (arr) {
+                if (value === undefined) {
+                    arr.length = 0;
+                } else {
+                    const idx = arr.indexOf(value);
+                    if (idx > -1) arr.splice(idx, 1);
+                }
+            }
+
+            updateDropdownSelectors();
+            renderDashboard();
+        }
+
+        function renderActiveFilterBadges() {
+            const bar = document.getElementById('active-badges-bar');
+            bar.innerHTML = '';
+            
+            let hasActiveFilter = false;
+
+            const addBadge = (text, type, value, isRed = false) => {
+                const badge = document.createElement('div');
+                badge.className = `active-filter-badge ${isRed ? 'badge-red' : ''}`;
+                badge.innerHTML = `${text} <span class="close-badge" onclick="clearSpecificFilter('${type}', '${value}')">×</span>`;
+                bar.appendChild(badge);
+                hasActiveFilter = true;
+            };
+
+            selectedYears.forEach(v => addBadge(`Año: ${v}`, 'year', v));
+            selectedQuarters.forEach(v => addBadge(`Trimestre: ${v}`, 'quarter', v));
+            selectedMonths.forEach(v => addBadge(`Mes: ${monthNames[v] || v}`, 'month', v));
+            selectedDivisions.forEach(v => addBadge(`División: ${v}`, 'division', v));
+            selectedStores.forEach(v => addBadge(`Tienda: ${v}`, 'store', v));
+            selectedCompanies.forEach(v => addBadge(`Empresa: ${v}`, 'cia', v));
+            selectedReceptions.forEach(v => addBadge(`Recepción: ${v}`, 'recepcion', v));
+            selectedMotivos.forEach(v => addBadge(`Motivo: ${v}`, 'motivo', v, true));
+            selectedStoreTypes.forEach(v => addBadge(`Tipo: ${v}`, 'tipo_tienda', v));
+
+            const hasSelectors = (selectedYears.length > 0 || selectedQuarters.length > 0 || selectedMonths.length > 0 || selectedDivisions.length > 0 || selectedCompanies.length > 0 || selectedReceptions.length > 0 || selectedStores.length > 0 || selectedMotivos.length > 0 || selectedStoreTypes.length > 0);
+            
+            const floatBtn = document.getElementById('float-reset-btn');
+            if (hasSelectors) {
+                floatBtn.style.display = 'flex';
+            } else {
+                floatBtn.style.display = 'none';
+            }
+        }
+
+        // --- 5. COMPUTE FILTERED DATASETS ---
+        function getFilteredData() {
+            if (rawData.length === 0) return null; // Safe guard for missing CSV
+
+            const filteredRows = [];
+            const storeYearTotals = {}; // Tracks store first years in filtered scope
+
+            // Track detailed structures for aggregate tables and charts
+            const uData = {};
+            const cData = {};
+            const divMap = {};
+            const storeMap = {}; // { storeName: { totalUnits, totalCost, reasons: { reasonName: units } } }
+
+            // Initialize Reasons
+            const allReasons = Array.from(new Set(Object.values(catMap)));
+            allReasons.forEach(r => {
+                uData[r] = { total: 0, prom: 0, "%": 0 };
+                cData[r] = { total: 0, "%": 0 };
+            });
+            uData["OTROS"] = { total: 0, prom: 0, "%": 0 };
+            cData["OTROS"] = { total: 0, "%": 0 };
+
+            // Determine time columns depending on filters
+            let colType = 'years';
+            let cols = ["2024", "2025", "2026"];
+            
+            if (selectedYears.length === 1) {
+                if (selectedQuarters.length === 1) {
+                    if (selectedMonths.length === 1) {
+                        colType = 'single';
+                        cols = [selectedMonths[0]];
+                    } else {
+                        colType = 'months';
+                        if (selectedMonths.length > 1) {
+                            cols = selectedMonths;
+                        } else {
+                            const qNum = parseInt(selectedQuarters[0][1], 10);
+                            cols = [((qNum - 1) * 3 + 1).toString(), ((qNum - 1) * 3 + 2).toString(), ((qNum - 1) * 3 + 3).toString()];
+                        }
+                    }
+                } else if (selectedQuarters.length > 1) {
+                    colType = 'quarters';
+                    cols = selectedQuarters;
+                } else {
+                    if (selectedMonths.length > 0) {
+                        colType = 'months';
+                        cols = selectedMonths;
+                    } else {
+                        colType = 'quarters';
+                        cols = ["Q1", "Q2", "Q3", "Q4"];
+                    }
+                }
+            } else if (selectedYears.length > 1) {
+                colType = 'years';
+                cols = selectedYears;
+            }
+
+            // Prepare columns keys in uData and cData
+            allReasons.concat(["OTROS"]).forEach(r => {
+                cols.forEach(col => {
+                    uData[r][col] = 0;
+                    cData[r][col] = 0;
+                });
+            });
+
+            let globalUnits = 0;
+            let globalCost = 0;
+            let receivedCost = 0;
+
+            rawData.forEach(row => {
+                // Parse date
+                const dateObj = parseDMY(row.Fecha);
+                if (!dateObj) return;
+
+                const mappedReason = catMap[row.Categoria_Final];
+                if (!mappedReason) return; // Excluir "LAYOUT / INVENTARIO FÍSICO" y "CORRECCIÓN (MALA FACTURACIÓN)"
+
+                // 1. Time Filters
+                if (selectedYears.length > 0 && !selectedYears.includes(dateObj.year.toString())) return;
+                if (selectedQuarters.length > 0 && !selectedQuarters.includes(dateObj.quarter)) return;
+                if (selectedMonths.length > 0 && !selectedMonths.includes(dateObj.month.toString())) return;
+
+                // 2. Operational Filters
+                if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
+                if (selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) return;
+                if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
+                if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
+
+                // 3. Graphic interactive filters
+                if (selectedMotivos.length > 0) {
+                    if (!selectedMotivos.includes(mappedReason)) return;
+                }
+                if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+
+                const u = parseFloat(row.unidades || 0);
+                const c = parseFloat(row.costo || 0);
+                const isRec = row.RECEPCIONADO === 'RECEPCIONADO';
+
+                globalUnits += u;
+                globalCost += c;
+                if (isRec) receivedCost += c;
+
+                // Aggregate by column
+                let colKey = dateObj.year.toString(); // default 'years'
+                if (colType === 'quarters') colKey = dateObj.quarter;
+                if (colType === 'months' || colType === 'single') colKey = dateObj.month.toString();
+
+                if (cols.includes(colKey)) {
+                    uData[mappedReason][colKey] += u;
+                    cData[mappedReason][colKey] += c;
+                }
+                uData[mappedReason].total += u;
+                cData[mappedReason].total += c;
+
+                // Aggregate by Division
+                const div = row.Division || "DESCONOCIDA";
+                if (!divMap[div]) divMap[div] = { units: 0, cost: 0 };
+                divMap[div].units += u;
+                divMap[div].cost += c;
+
+                // Aggregate by Store (Origen) and reason breakdown
+                const store = row.Origen || "DESCONOCIDA";
+                if (!storeMap[store]) {
+                    storeMap[store] = { name: store, totalUnits: 0, totalCost: 0, reasons: {}, reasonCosts: {} };
+                    allReasons.concat(["OTROS"]).forEach(r => {
+                        storeMap[store].reasons[r] = 0;
+                        storeMap[store].reasonCosts[r] = 0;
+                    });
+                }
+                storeMap[store].totalUnits += u;
+                storeMap[store].totalCost += c;
+                storeMap[store].reasons[mappedReason] += u;
+                storeMap[store].reasonCosts[mappedReason] += c;
+            });
+
+            // Save globally for details table view
+            storeMapGlobal = storeMap;
+
+            // Post-process reasons percentages and averages
+            allReasons.concat(["OTROS"]).forEach(r => {
+                uData[r]["%"] = globalUnits > 0 ? (uData[r].total / globalUnits) * 100 : 0;
+                uData[r].prom = uData[r].total > 0 ? (cData[r].total / uData[r].total) : 0;
+                cData[r]["%"] = globalCost > 0 ? (cData[r].total / globalCost) * 100 : 0;
+            });
+
+            // Top 15 stores
+            const sortedStores = Object.values(storeMap)
+                .sort((a, b) => b.totalUnits - a.totalUnits)
+                .slice(0, 15);
+
+            // Compute main reason for each top store
+            sortedStores.forEach(s => {
+                let maxU = -1;
+                let mainR = "OTROS";
+                Object.keys(s.reasons).forEach(r => {
+                    if (s.reasons[r] > maxU) {
+                        maxU = s.reasons[r];
+                        mainR = r;
+                    }
+                });
+                s.mainReason = mainR;
+            });
+
+            // Find New Stores in the filtered scope
+            const activeYearNum = selectedYears.length === 1 ? parseInt(selectedYears[0], 10) : NaN;
+            const newStoresList = [];
+            
+            if (!isNaN(activeYearNum)) {
+                Object.keys(storeFirstYear).forEach(store => {
+                    if (storeFirstYear[store] === activeYearNum) {
+                        if (storeMap[store] && storeMap[store].totalUnits > 0) {
+                            newStoresList.push({
+                                name: store,
+                                units: storeMap[store].totalUnits,
+                                cost: storeMap[store].totalCost
+                            });
+                        }
+                    }
+                });
+            }
+            newStoresList.sort((a, b) => b.units - a.units);
+
+            // Top 5 divisions
+            const sortedDivisions = Object.keys(divMap).map(k => ({
+                name: k,
+                units: divMap[k].units,
+                cost: divMap[k].cost
+            })).sort((a, b) => b.units - a.units).slice(0, 5);
+
+            return {
+                units: uData,
+                costs: cData,
+                divisions: sortedDivisions,
+                stores: sortedStores,
+                newStores: newStoresList,
+                colType: colType,
+                columns: cols,
+                totals: {
+                    units: globalUnits,
+                    cost: globalCost,
+                    receivedCost: receivedCost,
+                    avgCost: globalUnits > 0 ? globalCost / globalUnits : 0
+                }
+            };
+        }
+
+        // --- 6. RENDER DYNAMIC DASHBOARD ---
+        function renderDashboard() {
+            renderActiveFilterBadges();
+
+            const data = getFilteredData();
+            if (!data) return;
+
+            // 1. Render KPIs
+            document.getElementById('total-unidades').innerText = Math.round(data.totals.units).toLocaleString();
+            document.getElementById('total-costo').innerText = 'L ' + Math.round(data.totals.cost).toLocaleString();
+            document.getElementById('costo-promedio').innerText = 'L ' + data.totals.avgCost.toFixed(2);
+
+            // 2. Render Dynamic Tables
+            renderDynamicTables(data);
+
+            // 3. Render Top Stores Table
+            renderTopStoresTable(data.stores);
+
+            // 4. Render New Stores List
+            renderNewStoresList(data.newStores);
+
+            // 5. Render Q&A Section
+            renderQASection(data);
+
+            // 6. Draw Charts
+            drawCharts(data);
+        }
+
+        // --- 7. DYNAMIC TABLE GENERATOR ---
+        function renderDynamicTables(data) {
+            const unitsHead = document.getElementById('table-units-head');
+            const unitsBody = document.getElementById('table-units-body');
+            const costHead = document.getElementById('table-cost-head');
+            const costBody = document.getElementById('table-cost-body');
+
+            // Set Title description based on time resolution
+            let resolutionDesc = "por Motivo (Mensual)";
+            if (data.colType === 'years') resolutionDesc = "por Motivo (Anual 2024-2026)";
+            if (data.colType === 'quarters') resolutionDesc = "por Motivo (Trimestral)";
+            document.getElementById('table-title').innerText = `Distribución ${resolutionDesc}`;
+
+            // Helper to get formatted header columns names
+            const getColLabel = (colKey) => {
+                if (data.colType === 'months' || data.colType === 'single') {
+                    return monthNames[parseInt(colKey, 10)] || colKey;
+                }
+                return colKey;
+            };
+
+            // Dynamic HEADERS
+            let uHeadHTML = `<tr><th>Categoría Final (Motivo)</th>`;
+            data.columns.forEach(col => {
+                uHeadHTML += `<th class="num-col">${getColLabel(col)}</th>`;
+            });
+            uHeadHTML += `<th class="num-col">Total Gral.</th><th class="num-col">% Part.</th><th class="num-col">Costo Prom.</th></tr>`;
+            unitsHead.innerHTML = uHeadHTML;
+
+            let cHeadHTML = `<tr><th>Categoría Final (Motivo)</th>`;
+            data.columns.forEach(col => {
+                cHeadHTML += `<th class="num-col">${getColLabel(col)}</th>`;
+            });
+            cHeadHTML += `<th class="num-col">Total Gral.</th><th class="num-col">% Part.</th></tr>`;
+            costHead.innerHTML = cHeadHTML;
+
+            // Sort Reasons by total units descending (except OTROS)
+            const sortedCats = Object.keys(data.units)
+                .filter(k => k !== 'OTROS')
+                .sort((a, b) => data.units[b].total - data.units[a].total);
+            if (data.units["OTROS"] && data.units["OTROS"].total > 0) {
+                sortedCats.push("OTROS");
+            }
+
+            // Fill Units Body
+            unitsBody.innerHTML = '';
+            let colUnitsTotals = {};
+            data.columns.forEach(col => colUnitsTotals[col] = 0);
+            let unitsGrandTotal = 0;
+
+            sortedCats.forEach(cat => {
+                const row = data.units[cat];
+                if (row.total === 0) return; // Hide row if it has no data under current filters
+
+                const tr = document.createElement('tr');
+                let rowHTML = `<td class="text-bold">${cat}</td>`;
+                data.columns.forEach(col => {
+                    const val = row[col] || 0;
+                    rowHTML += `<td class="num-col">${Math.round(val).toLocaleString()}</td>`;
+                    colUnitsTotals[col] += val;
+                });
+                rowHTML += `<td class="num-col text-bold">${Math.round(row.total).toLocaleString()}</td>`;
+                rowHTML += `<td class="num-col">${row["%"].toFixed(2)}%</td>`;
+                rowHTML += `<td class="num-col">L ${row.prom.toFixed(2)}</td>`;
+                tr.innerHTML = rowHTML;
+                unitsBody.appendChild(tr);
+                unitsGrandTotal += row.total;
+            });
+
+            // Totals Row Units
+            const trUTotal = document.createElement('tr');
+            trUTotal.className = 'totals-row';
+            let uTotalHTML = `<td>Total general</td>`;
+            data.columns.forEach(col => {
+                uTotalHTML += `<th class="num-col">${Math.round(colUnitsTotals[col]).toLocaleString()}</th>`;
+            });
+            uTotalHTML += `<td class="num-col">${Math.round(unitsGrandTotal).toLocaleString()}</td>`;
+            uTotalHTML += `<td class="num-col">100.00%</td>`;
+            uTotalHTML += `<td class="num-col">L ${data.totals.avgCost.toFixed(2)}</td>`;
+            trUTotal.innerHTML = uTotalHTML;
+            unitsBody.appendChild(trUTotal);
+
+            // Fill Cost Body
+            costBody.innerHTML = '';
+            let colCostTotals = {};
+            data.columns.forEach(col => colCostTotals[col] = 0);
+            let costGrandTotal = 0;
+
+            // Sort Reasons by cost total descending
+            const sortedCostCats = Object.keys(data.costs)
+                .filter(k => k !== 'OTROS')
+                .sort((a, b) => data.costs[b].total - data.costs[a].total);
+            if (data.costs["OTROS"] && data.costs["OTROS"].total > 0) {
+                sortedCostCats.push("OTROS");
+            }
+
+            sortedCostCats.forEach(cat => {
+                const row = data.costs[cat];
+                if (row.total === 0) return;
+
+                const tr = document.createElement('tr');
+                let rowHTML = `<td class="text-bold">${cat}</td>`;
+                data.columns.forEach(col => {
+                    const val = row[col] || 0;
+                    rowHTML += `<td class="num-col">L ${Math.round(val).toLocaleString()}</td>`;
+                    colCostTotals[col] += val;
+                });
+                rowHTML += `<td class="num-col text-bold">L ${Math.round(row.total).toLocaleString()}</td>`;
+                rowHTML += `<td class="num-col">${row["%"].toFixed(2)}%</td>`;
+                tr.innerHTML = rowHTML;
+                costBody.appendChild(tr);
+                costGrandTotal += row.total;
+            });
+
+            // Totals Row Cost
+            const trCTotal = document.createElement('tr');
+            trCTotal.className = 'totals-row';
+            let cTotalHTML = `<td>Total general</td>`;
+            data.columns.forEach(col => {
+                cTotalHTML += `<th class="num-col">L ${Math.round(colCostTotals[col]).toLocaleString()}</th>`;
+            });
+            cTotalHTML += `<td class="num-col">L ${Math.round(costGrandTotal).toLocaleString()}</td>`;
+            cTotalHTML += `<td class="num-col">100.00%</td>`;
+            trCTotal.innerHTML = cTotalHTML;
+            costBody.appendChild(trCTotal);
+        }
+
+        function switchTableTab(tab) {
+            activeTableTab = tab;
+            const btnUnits = document.getElementById('tab-units-btn');
+            const btnCost = document.getElementById('tab-cost-btn');
+            const containerUnits = document.getElementById('table-units-container');
+            const containerCost = document.getElementById('table-cost-container');
+
+            if (tab === 'units') {
+                btnUnits.classList.add('active');
+                btnCost.classList.remove('active');
+                containerUnits.style.display = 'block';
+                containerCost.style.display = 'none';
+            } else {
+                btnUnits.classList.remove('active');
+                btnCost.classList.add('active');
+                containerUnits.style.display = 'none';
+                containerCost.style.display = 'block';
+            }
+        }
+
+        // --- 8. TOP STORES TABLE & MOTIVES DETAIL ---
+        function renderTopStoresTable(storesList) {
+            const titleEl = document.getElementById('top-stores-title');
+            const theadEl = document.getElementById('table-stores-head');
+            const tbodyEl = document.getElementById('table-stores-body');
+            
+            if (selectedStores.length === 1) {
+                // Detail Mode for a single store
+                const storeName = selectedStores[0];
+                titleEl.innerText = `Detalle por Motivo: ${storeName}`;
+                theadEl.innerHTML = `
+                    <tr>
+                        <th>Motivo de Devolución</th>
+                        <th class="num-col">Unidades</th>
+                        <th class="num-col">Costo Total (L)</th>
+                        <th class="num-col">% Part.</th>
+                    </tr>
+                `;
+                
+                // Get store data from global reference
+                const storeData = storeMapGlobal[storeName];
+                if (!storeData) {
+                    tbodyEl.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin datos para esta sucursal</td></tr>`;
+                    return;
+                }
+                
+                tbodyEl.innerHTML = '';
+                const sortedReasons = Object.keys(storeData.reasons)
+                    .sort((a, b) => storeData.reasons[b] - storeData.reasons[a]);
+                
+                sortedReasons.forEach(reason => {
+                    const units = storeData.reasons[reason];
+                    const cost = storeData.reasonCosts ? (storeData.reasonCosts[reason] || 0) : 0;
+                    if (units === 0 && cost === 0) return;
+                    
+                    const pct = storeData.totalUnits > 0 ? (units / storeData.totalUnits) * 100 : 0;
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-bold">${reason}</td>
+                        <td class="num-col">${Math.round(units).toLocaleString()}</td>
+                        <td class="num-col">L ${Math.round(cost).toLocaleString()}</td>
+                        <td class="num-col">${pct.toFixed(2)}%</td>
+                    `;
+                    tbodyEl.appendChild(tr);
+                });
+                
+                // Total row
+                const trTotal = document.createElement('tr');
+                trTotal.className = 'totals-row';
+                trTotal.innerHTML = `
+                    <td>Total general</td>
+                    <td class="num-col">${Math.round(storeData.totalUnits).toLocaleString()}</td>
+                    <td class="num-col">L ${Math.round(storeData.totalCost).toLocaleString()}</td>
+                    <td class="num-col">100.00%</td>
+                `;
+                tbodyEl.appendChild(trTotal);
+            } else {
+                // Top 15 stores list mode
+                titleEl.innerText = "Top 15 Tiendas (Detalle Financiero)";
+                theadEl.innerHTML = `
+                    <tr>
+                        <th>Tienda Origen</th>
+                        <th class="num-col">Unidades</th>
+                        <th class="num-col">Costo Total (L)</th>
+                    </tr>
+                `;
+                tbodyEl.innerHTML = '';
+                if (storesList.length === 0) {
+                    tbodyEl.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sin sucursales registradas</td></tr>`;
+                    return;
+                }
+                storesList.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-bold">${s.name}</td>
+                        <td class="num-col">${Math.round(s.totalUnits).toLocaleString()}</td>
+                        <td class="num-col">L ${Math.round(s.totalCost).toLocaleString()}</td>
+                    `;
+                    tbodyEl.appendChild(tr);
+                });
+            }
+        }
+
+        // --- 9. NEW STORES AUDIT LIST ---
+        function renderNewStoresList(newStoresList) {
+            const box = document.getElementById('new-stores-list');
+            box.innerHTML = '';
+            
+            const activeYear = selectedYears.length === 1 ? selectedYears[0] : 'ALL';
+
+            if (activeYear === 'ALL') {
+                box.innerHTML = `<div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 1rem;">Selecciona un Año específico (2025 o 2026) para auditar nuevas sucursales aperturando devoluciones.</div>`;
+                document.getElementById('qa-q5-badge').innerText = "N/A";
+                document.getElementById('qa-q5-ans').innerText = "Selecciona un año específico.";
+                return;
+            }
+
+            if (newStoresList.length === 0) {
+                box.innerHTML = `<div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 1rem;">No se detectaron nuevas tiendas con devoluciones por primera vez en ${activeYear}.</div>`;
+                document.getElementById('qa-q5-badge').innerText = "0 Tiendas";
+                document.getElementById('qa-q5-ans').innerText = `Ninguna sucursal inició historial de devolución en ${activeYear}.`;
+                return;
+            }
+
+            document.getElementById('qa-q5-badge').innerText = `${newStoresList.length} Tiendas`;
+            document.getElementById('qa-q5-ans').innerText = `Top nueva: ${newStoresList[0].name} (${Math.round(newStoresList[0].units).toLocaleString()} u).`;
+
+            newStoresList.forEach(s => {
+                const row = document.createElement('div');
+                row.className = 'new-store-row';
+                row.innerHTML = `
+                    <span class="text-bold">${s.name}</span>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">
+                        ${Math.round(s.units).toLocaleString()} u | <strong>L ${Math.round(s.cost).toLocaleString()}</strong>
+                    </span>
+                `;
+                box.appendChild(row);
+            });
+        }
+
+        // --- 10. DIRECTORS Q&A BLOCK GENERATOR ---
+        function renderQASection(data) {
+            // Q1: Costo total y volumen
+            document.getElementById('qa-q1-badge').innerText = 'L ' + Math.round(data.totals.cost).toLocaleString();
+            document.getElementById('qa-q1-ans').innerHTML = `Representa un total físico de <strong>${Math.round(data.totals.units).toLocaleString()} unidades</strong> devueltas.`;
+
+            // Q2: Pareto Motivos
+            const sortedPareto = Object.keys(data.units)
+                .map(k => ({ name: k, total: data.units[k].total, pct: data.units[k]["%"] }))
+                .sort((a, b) => b.total - a.total);
+            if (sortedPareto.length > 0) {
+                const p1 = sortedPareto[0];
+                const p2 = sortedPareto[1] || { name: 'N/A', pct: 0 };
+                const topPct = p1.pct + p2.pct;
+                document.getElementById('qa-q2-badge').innerText = `${Math.round(topPct)}% del Costo`;
+                document.getElementById('qa-q2-ans').innerHTML = `Concentrado principalmente en <strong>${p1.name}</strong> (${Math.round(p1.pct)}%).`;
+            }
+
+            // Q3: Recepcionado CD
+            const recPct = data.totals.cost > 0 ? (data.totals.receivedCost / data.totals.cost) * 100 : 0;
+            const pendingCost = data.totals.cost - data.totals.receivedCost;
+            document.getElementById('qa-q3-badge').innerText = `${recPct.toFixed(1)}% CD`;
+            document.getElementById('qa-q3-ans').innerHTML = `<strong>L ${Math.round(data.totals.receivedCost).toLocaleString()}</strong> recepcionado. L ${Math.round(pendingCost).toLocaleString()} en tránsito/pendiente.`;
+
+            // Q4: División de Mayor Impacto
+            if (data.divisions.length > 0) {
+                const topDiv = data.divisions[0];
+                const divPct = data.totals.units > 0 ? (topDiv.units / data.totals.units) * 100 : 0;
+                document.getElementById('qa-q4-badge').innerText = topDiv.name;
+                document.getElementById('qa-q4-ans').innerHTML = `Impacto de <strong>L ${Math.round(topDiv.cost).toLocaleString()}</strong> (${Math.round(divPct)}% del volumen total).`;
+            } else {
+                document.getElementById('qa-q4-badge').innerText = 'Ninguna';
+                document.getElementById('qa-q4-ans').innerText = 'No hay divisiones registradas.';
+            }
+
+            // Q6: Motivo más costoso unitariamente
+            const reasonsCostly = Object.keys(data.units)
+                .map(k => ({ name: k, prom: data.units[k].prom }))
+                .filter(x => x.prom > 0)
+                .sort((a, b) => b.prom - a.prom);
+            if (reasonsCostly.length > 0) {
+                const costly = reasonsCostly[0];
+                document.getElementById('qa-q6-badge').innerText = costly.name.split(' (')[0]; // shorten
+                document.getElementById('qa-q6-ans').innerHTML = `Costo promedio unitario de <strong>L ${costly.prom.toFixed(2)}</strong>.`;
+            } else {
+                document.getElementById('qa-q6-badge').innerText = 'Ninguno';
+                document.getElementById('qa-q6-ans').innerText = 'Sin registros de motivos.';
+            }
+        }
+
+        // --- 11. STATIC REPORT FALLBACK ENGINE (Matches image exactly on double-click) ---
+        function renderStaticOfficialDashboard() {
+            document.getElementById('total-unidades').innerText = "785,969";
+            document.getElementById('total-costo').innerText = "L 67,627,499";
+            document.getElementById('costo-promedio').innerText = "L 86.04";
+
+            // Construct staticData object matching getFilteredData() structure
+            const staticData = {
+                units: officialUnits,
+                costs: officialCosts,
+                divisions: officialDivisions,
+                stores: officialStores,
+                colType: 'quarters',
+                columns: ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"],
+                totals: {
+                    units: 785969,
+                    cost: 67627498.53,
+                    receivedCost: 0, // static mode doesn't separate recepcion
+                    avgCost: 86.04
+                }
+            };
+
+            renderDynamicTables(staticData);
+            renderTopStoresTable(officialStores);
+            
+            // Render static Q&A
+            document.getElementById('qa-q1-badge').innerText = "L 67,627,499";
+            document.getElementById('qa-q1-ans').innerHTML = "Representa un total físico de <strong>785,969 unidades</strong> devueltas.";
+            document.getElementById('qa-q2-badge').innerText = "84.5% del Costo";
+            document.getElementById('qa-q2-ans').innerHTML = "Concentrado en <strong>SOLICITADO POR ANÁLISIS</strong> (77.6%) y <strong>EXCESO</strong> (6.9%).";
+            document.getElementById('qa-q3-badge').innerText = "N/A";
+            document.getElementById('qa-q3-ans').innerHTML = "Modo estático oficial de auditoría. Carga el CSV dinámico para ver estado CD.";
+            document.getElementById('qa-q4-badge').innerText = "ROPA";
+            document.getElementById('qa-q4-ans').innerHTML = "Impacto de <strong>L 31,856,851</strong> (47.1% del volumen total).";
+            document.getElementById('qa-q5-badge').innerText = "7 Tiendas";
+            document.getElementById('qa-q5-ans').innerHTML = "Nuevas registradas en 2026. Top: <strong>AEC TOCOA MAYOREO</strong>.";
+            document.getElementById('qa-q6-badge').innerText = "EXCESO INVENTARIO";
+            document.getElementById('qa-q6-ans').innerHTML = "Costo promedio unitario de <strong>L 114.31</strong>.";
+
+            // Render static new stores scrollbox
+            const box = document.getElementById('new-stores-list');
+            box.innerHTML = `
+                <div class="new-store-row"><span class="text-bold">AEC TOCOA MAYOREO</span><span style="color: var(--text-muted); font-size: 0.75rem;">35,495 u | <strong>L 1,879,899</strong></span></div>
+                <div class="new-store-row"><span class="text-bold">SPS DANDY-AEC</span><span style="color: var(--text-muted); font-size: 0.75rem;">15,798 u | <strong>L 1,626,082</strong></span></div>
+                <div class="new-store-row"><span class="text-bold">RIO LINDO-LV</span><span style="color: var(--text-muted); font-size: 0.75rem;">10,987 u | <strong>L 1,044,141</strong></span></div>
+                <div class="new-store-row"><span class="text-bold">SAN JUAN, INTIBUCA</span><span style="color: var(--text-muted); font-size: 0.75rem;">1,148 u | <strong>L 66,781</strong></span></div>
+            `;
+
+            drawCharts(staticData);
+        }
+
+        // --- 12. CHART.JS DRAW AND CLICK EVENT BINDINGS (BI Interactive) ---
+        function getChartColors() {
+            const isDark = activeTheme === 'dark';
+            return {
+                text: isDark ? '#f3f4f6' : '#0c1020',
+                grid: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(1, 32, 148, 0.08)',
+                pieBorders: isDark ? '#0c1020' : '#ffffff'
+            };
+        }
+
+        function drawCharts(data) {
+            const chartConf = getChartColors();
+            Chart.defaults.color = chartConf.text;
+            Chart.defaults.borderColor = chartConf.grid;
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // Clean previous charts
+            if (chartTrend) chartTrend.destroy();
+            if (chartPareto) chartPareto.destroy();
+            if (chartDivision) chartDivision.destroy();
+            if (chartStores) chartStores.destroy();
+
+            // CHART 1: TREND (COST VS VOLUME)
+            const trendCtx = document.getElementById('chart-trend').getContext('2d');
+            const trendLabels = data.columns.map(col => {
+                if (data.colType === 'months' || data.colType === 'single') return monthNames[parseInt(col, 10)] || col;
+                return col;
+            });
+            const trendUnits = data.columns.map(col => {
+                let sum = 0;
+                Object.values(data.units).forEach(row => sum += (row[col] || 0));
+                return sum;
+            });
+            const trendCosts = data.columns.map(col => {
+                let sum = 0;
+                Object.values(data.costs).forEach(row => sum += (row[col] || 0));
+                return sum;
+            });
+
+            chartTrend = new Chart(trendCtx, {
+                type: 'bar',
+                data: {
+                    labels: trendLabels,
+                    datasets: [
+                        {
+                            label: 'Unidades Devueltas',
+                            data: trendUnits,
+                            backgroundColor: 'rgba(1, 32, 148, 0.4)',
+                            borderColor: '#012094',
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Costo Total (L)',
+                            data: trendCosts,
+                            type: 'line',
+                            borderColor: '#E1251B',
+                            backgroundColor: '#E1251B',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#E1251B',
+                            yAxisID: 'yCost',
+                            tension: 0.2,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Unidades' } },
+                        yCost: { type: 'linear', position: 'right', grid: { display: false }, title: { display: true, text: 'Costo (L)' } }
+                    }
+                }
+            });
+
+            // CHART 2: PARETO MOTIVOS (Haz clic para filtrar)
+            const paretoCtx = document.getElementById('chart-pareto').getContext('2d');
+            const sortedParetoCats = Object.keys(data.units)
+                .filter(k => k !== 'OTROS')
+                .map(k => ({ name: k, total: data.units[k].total }))
+                .sort((a, b) => b.total - a.total);
+            const paretoLabels = sortedParetoCats.map(c => c.name);
+            const paretoUnits = sortedParetoCats.map(c => c.total);
+
+            const totalUnitsSum = paretoUnits.reduce((a, b) => a + b, 0);
+            let cumulativeSum = 0;
+            const paretoCumPercent = paretoUnits.map(val => {
+                cumulativeSum += val;
+                return totalUnitsSum > 0 ? (cumulativeSum / totalUnitsSum) * 100 : 0;
+            });
+
+            // Map color of reasons
+            const paretoColors = paretoLabels.map(l => reasonColors[l] || '#6b7280');
+
+            chartPareto = new Chart(paretoCtx, {
+                type: 'bar',
+                data: {
+                    labels: paretoLabels.map(l => l.split(' (')[0]), // Shorten label
+                    datasets: [
+                        {
+                            label: 'Unidades',
+                            data: paretoUnits,
+                            backgroundColor: paretoColors.map(c => c + '77'), // transparent version
+                            borderColor: paretoColors,
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '% Acumulado',
+                            data: paretoCumPercent,
+                            type: 'line',
+                            borderColor: '#E1251B',
+                            backgroundColor: '#E1251B',
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#E1251B',
+                            yAxisID: 'yPercent',
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (event, elements) => {
+                        if (elements.length > 0 && rawData.length > 0) {
+                            const index = elements[0].index;
+                            const fullLabel = paretoLabels[index];
+                            if (selectedMotivos.includes(fullLabel)) {
+                                selectedMotivos = selectedMotivos.filter(m => m !== fullLabel);
+                                showToast(`Removiendo filtro de motivo: ${fullLabel}`);
+                            } else {
+                                selectedMotivos.push(fullLabel);
+                                showToast(`Filtrando por motivo: ${fullLabel}`);
+                            }
+                            updateDropdownSelectors();
+                            renderDashboard();
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { type: 'linear', position: 'left' },
+                        yPercent: { type: 'linear', position: 'right', min: 0, max: 100, grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+
+            // CHART 3: DIVISION DOUGHNUT (Haz clic para filtrar)
+            const divCtx = document.getElementById('chart-division').getContext('2d');
+            const divLabels = data.divisions.map(d => d.name);
+            const divUnits = data.divisions.map(d => d.units);
+
+            chartDivision = new Chart(divCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: divLabels,
+                    datasets: [{
+                        data: divUnits,
+                        backgroundColor: ['#012094', '#E1251B', '#f59e0b', '#10b981', '#8b5cf6'],
+                        borderWidth: 2,
+                        borderColor: chartConf.pieBorders
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (event, elements) => {
+                        if (elements.length > 0 && rawData.length > 0) {
+                            const index = elements[0].index;
+                            const label = divLabels[index];
+                            if (selectedDivisions.includes(label)) {
+                                selectedDivisions = selectedDivisions.filter(d => d !== label);
+                                showToast(`Removiendo filtro de División: ${label}`);
+                            } else {
+                                selectedDivisions.push(label);
+                                showToast(`Filtrando por División: ${label}`);
+                            }
+                            updateDropdownSelectors();
+                            renderDashboard();
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12 } }
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            // CHART 4: STACKED TOP STORES AND REASONS
+            const storesCtx = document.getElementById('chart-stores').getContext('2d');
+            const storeLabels = data.stores.map(s => s.name);
+            
+            // Build datasets for each reason
+            const reasonsToStack = Object.keys(reasonColors);
+            const datasets = reasonsToStack.map(reason => {
+                const dataPoints = data.stores.map(store => store.reasons[reason] || 0);
+                return {
+                    label: reason.split(' (')[0], // Shorten label
+                    data: dataPoints,
+                    backgroundColor: reasonColors[reason],
+                    stack: 'Stack0'
+                };
+            });
+
+            chartStores = new Chart(storesCtx, {
+                type: 'bar',
+                data: {
+                    labels: storeLabels,
+                    datasets: datasets
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (event, elements) => {
+                        if (elements.length > 0 && rawData.length > 0) {
+                            const index = elements[0].index;
+                            const storeName = storeLabels[index];
+                            if (selectedStores.includes(storeName)) {
+                                selectedStores = selectedStores.filter(s => s !== storeName);
+                                showToast(`Removiendo filtro de Sucursal: ${storeName}`);
+                            } else {
+                                selectedStores.push(storeName);
+                                showToast(`Filtrando por Sucursal: ${storeName}`);
+                            }
+                            updateDropdownSelectors();
+                            renderDashboard();
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, title: { display: true, text: 'Unidades Devueltas' } },
+                        y: { stacked: true }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 10, font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
