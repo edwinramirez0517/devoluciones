@@ -436,6 +436,52 @@
             font-weight: 600;
         }
 
+        /* Sticky First Column */
+        table.dashboard-table th.sticky-col,
+        table.dashboard-table td.sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+
+        /* Dark Theme Sticky Backgrounds */
+        table.dashboard-table th.sticky-col {
+            background: #060b21; /* Opaque header color */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.4);
+        }
+
+        table.dashboard-table td.sticky-col {
+            background: #0c1020; /* Opaque card color */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.4);
+        }
+
+        table.dashboard-table tr:hover td.sticky-col {
+            background: #151a30; /* Opaque hover color */
+        }
+        
+        table.dashboard-table tr.totals-row td.sticky-col {
+            background: #010c3d; /* Opaque totals row color */
+        }
+
+        /* Light Theme Sticky Backgrounds */
+        [data-theme="light"] table.dashboard-table th.sticky-col {
+            background: #e5e7eb;
+            box-shadow: 2px 0 5px rgba(1, 32, 148, 0.1);
+        }
+
+        [data-theme="light"] table.dashboard-table td.sticky-col {
+            background: #ffffff;
+            box-shadow: 2px 0 5px rgba(1, 32, 148, 0.1);
+        }
+
+        [data-theme="light"] table.dashboard-table tr:hover td.sticky-col {
+            background: #f0f2f5;
+        }
+        
+        [data-theme="light"] table.dashboard-table tr.totals-row td.sticky-col {
+            background: #d1d5db;
+        }
+
         /* Tabs Buttons */
         .tabs-buttons {
             display: flex;
@@ -998,6 +1044,7 @@
                         </tbody>
                     </table>
                 </div>
+
             </div>
 
             <!-- Trend Chart Box -->
@@ -1010,6 +1057,33 @@
                 </div>
             </div>
 
+        </section>
+
+        <!-- Quarterly Comparison Section (Full Width) -->
+        <section class="glass-card" style="margin-top: 1.5rem; width: 100%;">
+            <div class="section-header">
+                <h2>Comparativo Trimestral Analítico</h2>
+                <div class="tabs-buttons">
+                    <button class="tab-btn active" onclick="switchQuarterlyTab('units')" id="tab-quarterly-units-btn">Unidades</button>
+                    <button class="tab-btn" onclick="switchQuarterlyTab('cost')" id="tab-quarterly-cost-btn">Costo (L)</button>
+                </div>
+            </div>
+            <div class="table-responsive" id="table-quarterly-container">
+                <div id="table-quarterly-units-container" style="display: block; margin-bottom: 20px;">
+                    <h3 style="text-align: center; margin: 15px 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-transform: uppercase; font-weight: 800;">TABLA UNIDADES Y % DE PARTICIPACION POR TRIMESTRE</h3>
+                    <table class="dashboard-table" id="table-quarterly-units">
+                        <thead id="table-quarterly-units-head"></thead>
+                        <tbody id="table-quarterly-units-body"></tbody>
+                    </table>
+                </div>
+                <div id="table-quarterly-cost-container" style="display: none;">
+                    <h3 style="text-align: center; margin: 15px 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-transform: uppercase; font-weight: 800;">TABLA COSTO Y % DE PARTICIPACION POR TRIMESTRE</h3>
+                    <table class="dashboard-table" id="table-quarterly-cost">
+                        <thead id="table-quarterly-cost-head"></thead>
+                        <tbody id="table-quarterly-cost-body"></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- Charts Container (Pareto & Division) -->
@@ -1763,12 +1837,22 @@
 
             // Initialize Reasons
             const allReasons = Array.from(new Set(Object.values(catMap)));
+            
+            const qyU = {};
+            const qyC = {};
+            
             allReasons.forEach(r => {
                 uData[r] = { total: 0, prom: 0, "%": 0 };
                 cData[r] = { total: 0, "%": 0 };
+                qyU[r] = {};
+                qyC[r] = {};
             });
             uData["OTROS"] = { total: 0, prom: 0, "%": 0 };
             cData["OTROS"] = { total: 0, "%": 0 };
+            qyU["OTROS"] = {};
+            qyC["OTROS"] = {};
+            
+            const qyColsSet = new Set();
 
             // Determine time columns depending on filters
             let colType = 'years';
@@ -1861,6 +1945,16 @@
                 }
                 uData[mappedReason].total += u;
                 cData[mappedReason].total += c;
+                
+                // Aggregate for Quarterly tables
+                const qyKey = `${dateObj.quarter} ${dateObj.year}`;
+                qyColsSet.add(qyKey);
+                if (!qyU[mappedReason][qyKey]) {
+                    qyU[mappedReason][qyKey] = 0;
+                    qyC[mappedReason][qyKey] = 0;
+                }
+                qyU[mappedReason][qyKey] += u;
+                qyC[mappedReason][qyKey] += c;
 
                 // Aggregate by Division
                 const div = row.Division || "DESCONOCIDA";
@@ -1937,9 +2031,20 @@
                 cost: divMap[k].cost
             })).sort((a, b) => b.units - a.units).slice(0, 5);
 
+            // Sort Quarter-Year columns
+            const qyCols = Array.from(qyColsSet).sort((a, b) => {
+                const partsA = a.split(' ');
+                const partsB = b.split(' ');
+                if (partsA[1] !== partsB[1]) return parseInt(partsA[1]) - parseInt(partsB[1]);
+                return partsA[0].localeCompare(partsB[0]);
+            });
+
             return {
                 units: uData,
                 costs: cData,
+                qyUnits: qyU,
+                qyCosts: qyC,
+                qyCols: qyCols,
                 divisions: sortedDivisions,
                 stores: sortedStores,
                 newStores: newStoresList,
@@ -2004,14 +2109,14 @@
             };
 
             // Dynamic HEADERS
-            let uHeadHTML = `<tr><th>Categoría Final (Motivo)</th>`;
+            let uHeadHTML = `<tr><th class="sticky-col">Categoría Final (Motivo)</th>`;
             data.columns.forEach(col => {
                 uHeadHTML += `<th class="num-col">${getColLabel(col)}</th>`;
             });
             uHeadHTML += `<th class="num-col">Total Gral.</th><th class="num-col">% Part.</th><th class="num-col">Costo Prom.</th></tr>`;
             unitsHead.innerHTML = uHeadHTML;
 
-            let cHeadHTML = `<tr><th>Categoría Final (Motivo)</th>`;
+            let cHeadHTML = `<tr><th class="sticky-col">Categoría Final (Motivo)</th>`;
             data.columns.forEach(col => {
                 cHeadHTML += `<th class="num-col">${getColLabel(col)}</th>`;
             });
@@ -2037,7 +2142,7 @@
                 if (row.total === 0) return; // Hide row if it has no data under current filters
 
                 const tr = document.createElement('tr');
-                let rowHTML = `<td class="text-bold">${cat}</td>`;
+                let rowHTML = `<td class="text-bold sticky-col">${cat}</td>`;
                 data.columns.forEach(col => {
                     const val = row[col] || 0;
                     rowHTML += `<td class="num-col">${Math.round(val).toLocaleString()}</td>`;
@@ -2054,7 +2159,7 @@
             // Totals Row Units
             const trUTotal = document.createElement('tr');
             trUTotal.className = 'totals-row';
-            let uTotalHTML = `<td>Total general</td>`;
+            let uTotalHTML = `<td class="sticky-col">Total general</td>`;
             data.columns.forEach(col => {
                 uTotalHTML += `<th class="num-col">${Math.round(colUnitsTotals[col]).toLocaleString()}</th>`;
             });
@@ -2099,7 +2204,7 @@
             // Totals Row Cost
             const trCTotal = document.createElement('tr');
             trCTotal.className = 'totals-row';
-            let cTotalHTML = `<td>Total general</td>`;
+            let cTotalHTML = `<td class="sticky-col">Total general</td>`;
             data.columns.forEach(col => {
                 cTotalHTML += `<th class="num-col">L ${Math.round(colCostTotals[col]).toLocaleString()}</th>`;
             });
@@ -2107,6 +2212,160 @@
             cTotalHTML += `<td class="num-col">100.00%</td>`;
             trCTotal.innerHTML = cTotalHTML;
             costBody.appendChild(trCTotal);
+            // ------------------------------------
+            // QUARTERLY TAB TABLES (UNITS AND COST)
+            // ------------------------------------
+            const qyUnitsHead = document.getElementById('table-quarterly-units-head');
+            const qyUnitsBody = document.getElementById('table-quarterly-units-body');
+            const qyCostHead = document.getElementById('table-quarterly-cost-head');
+            const qyCostBody = document.getElementById('table-quarterly-cost-body');
+            
+            // Group QY Columns by Year to inject subtotals
+            const qyYearsMap = {};
+            data.qyCols.forEach(col => {
+                const parts = col.split(' ');
+                if (parts.length === 2) {
+                    const yr = parts[1];
+                    if (!qyYearsMap[yr]) qyYearsMap[yr] = [];
+                    qyYearsMap[yr].push(col);
+                }
+            });
+            const qyYears = Object.keys(qyYearsMap).sort();
+
+            // Generate headers
+            let qyUHeadHTML = `<tr><th class="sticky-col">MOTIVOS</th>`;
+            qyYears.forEach(yr => {
+                qyYearsMap[yr].forEach(col => {
+                    qyUHeadHTML += `<th class="num-col">${col}</th><th class="num-col">% Part.</th>`;
+                });
+                qyUHeadHTML += `<th class="num-col" style="background: rgba(1, 12, 61, 0.4); border-left: 2px solid var(--card-border);">Total ${yr}</th><th class="num-col" style="background: rgba(1, 12, 61, 0.4);">% Part.</th>`;
+            });
+            qyUHeadHTML += `<th class="num-col" style="border-left: 2px solid var(--card-border);">Total General</th><th class="num-col">% Part.</th></tr>`;
+            if (qyUnitsHead) qyUnitsHead.innerHTML = qyUHeadHTML;
+
+            let qyCHeadHTML = `<tr><th class="sticky-col">MOTIVOS</th>`;
+            qyYears.forEach(yr => {
+                qyYearsMap[yr].forEach(col => {
+                    qyCHeadHTML += `<th class="num-col">${col}</th><th class="num-col">% Part.</th>`;
+                });
+                qyCHeadHTML += `<th class="num-col" style="background: rgba(1, 12, 61, 0.4); border-left: 2px solid var(--card-border);">Total ${yr}</th><th class="num-col" style="background: rgba(1, 12, 61, 0.4);">% Part.</th>`;
+            });
+            qyCHeadHTML += `<th class="num-col" style="border-left: 2px solid var(--card-border);">Total General</th><th class="num-col">% Part.</th></tr>`;
+            if (qyCostHead) qyCostHead.innerHTML = qyCHeadHTML;
+            
+            // Compute global totals per QY column & Yearly Subtotals
+            const qyGlobalU = {};
+            const qyGlobalC = {};
+            const qyYearGlobalU = {};
+            const qyYearGlobalC = {};
+            
+            qyYears.forEach(yr => {
+                qyYearGlobalU[yr] = 0;
+                qyYearGlobalC[yr] = 0;
+                qyYearsMap[yr].forEach(col => {
+                    qyGlobalU[col] = 0;
+                    qyGlobalC[col] = 0;
+                });
+            });
+
+            sortedCats.forEach(cat => {
+                qyYears.forEach(yr => {
+                    qyYearsMap[yr].forEach(col => {
+                        const valU = data.qyUnits[cat][col] || 0;
+                        const valC = data.qyCosts[cat][col] || 0;
+                        qyGlobalU[col] += valU;
+                        qyGlobalC[col] += valC;
+                        qyYearGlobalU[yr] += valU;
+                        qyYearGlobalC[yr] += valC;
+                    });
+                });
+            });
+
+            // Fill Bodies
+            if (qyUnitsBody) qyUnitsBody.innerHTML = '';
+            if (qyCostBody) qyCostBody.innerHTML = '';
+            
+            sortedCats.forEach(cat => {
+                const rowU = data.units[cat];
+                if (rowU.total === 0) return;
+
+                // Units Row
+                const trU = document.createElement('tr');
+                let htmlU = `<td class="text-bold sticky-col">${cat}</td>`;
+                qyYears.forEach(yr => {
+                    let yrTotalU = 0;
+                    qyYearsMap[yr].forEach(col => {
+                        const val = data.qyUnits[cat][col] || 0;
+                        yrTotalU += val;
+                        const pct = qyGlobalU[col] > 0 ? (val / qyGlobalU[col]) * 100 : 0;
+                        htmlU += `<td class="num-col">${Math.round(val).toLocaleString()}</td>`;
+                        htmlU += `<td class="num-col" style="background: rgba(16, 185, 129, ${pct > 0 ? pct/100 * 0.7 : 0});">${pct.toFixed(2)}%</td>`;
+                    });
+                    const yrPct = qyYearGlobalU[yr] > 0 ? (yrTotalU / qyYearGlobalU[yr]) * 100 : 0;
+                    htmlU += `<td class="num-col text-bold" style="background: rgba(1, 12, 61, 0.4); border-left: 2px solid var(--card-border);">${Math.round(yrTotalU).toLocaleString()}</td>`;
+                    htmlU += `<td class="num-col" style="background: rgba(1, 12, 61, 0.4);">${yrPct.toFixed(2)}%</td>`;
+                });
+                htmlU += `<td class="num-col text-bold" style="border-left: 2px solid var(--card-border);">${Math.round(rowU.total).toLocaleString()}</td>`;
+                htmlU += `<td class="num-col" style="background: rgba(16, 185, 129, ${rowU["%"] > 0 ? rowU["%"]/100 * 0.7 : 0});">${rowU["%"].toFixed(2)}%</td>`;
+                trU.innerHTML = htmlU;
+                if (qyUnitsBody) qyUnitsBody.appendChild(trU);
+
+                // Cost Row
+                const rowC = data.costs[cat];
+                const trC = document.createElement('tr');
+                let htmlC = `<td class="text-bold sticky-col">${cat}</td>`;
+                qyYears.forEach(yr => {
+                    let yrTotalC = 0;
+                    qyYearsMap[yr].forEach(col => {
+                        const val = data.qyCosts[cat][col] || 0;
+                        yrTotalC += val;
+                        const pct = qyGlobalC[col] > 0 ? (val / qyGlobalC[col]) * 100 : 0;
+                        htmlC += `<td class="num-col">L ${Math.round(val).toLocaleString()}</td>`;
+                        htmlC += `<td class="num-col" style="background: rgba(16, 185, 129, ${pct > 0 ? pct/100 * 0.7 : 0});">${pct.toFixed(2)}%</td>`;
+                    });
+                    const yrPctC = qyYearGlobalC[yr] > 0 ? (yrTotalC / qyYearGlobalC[yr]) * 100 : 0;
+                    htmlC += `<td class="num-col text-bold" style="background: rgba(1, 12, 61, 0.4); border-left: 2px solid var(--card-border);">L ${Math.round(yrTotalC).toLocaleString()}</td>`;
+                    htmlC += `<td class="num-col" style="background: rgba(1, 12, 61, 0.4);">${yrPctC.toFixed(2)}%</td>`;
+                });
+                htmlC += `<td class="num-col text-bold" style="border-left: 2px solid var(--card-border);">L ${Math.round(rowC.total).toLocaleString()}</td>`;
+                htmlC += `<td class="num-col" style="background: rgba(16, 185, 129, ${rowC["%"] > 0 ? rowC["%"]/100 * 0.7 : 0});">${rowC["%"].toFixed(2)}%</td>`;
+                trC.innerHTML = htmlC;
+                if (qyCostBody) qyCostBody.appendChild(trC);
+            });
+
+            // Quarterly Totals Row (Units)
+            const qyTrTotalU = document.createElement('tr');
+            qyTrTotalU.className = 'totals-row';
+            let qyTotalHTMLU = `<td class="sticky-col">Total general</td>`;
+            qyYears.forEach(yr => {
+                qyYearsMap[yr].forEach(col => {
+                    qyTotalHTMLU += `<th class="num-col">${Math.round(qyGlobalU[col]).toLocaleString()}</th>`;
+                    qyTotalHTMLU += `<th class="num-col">100.00%</th>`;
+                });
+                qyTotalHTMLU += `<th class="num-col" style="background: rgba(1, 12, 61, 0.6); border-left: 2px solid var(--card-border);">${Math.round(qyYearGlobalU[yr]).toLocaleString()}</th>`;
+                qyTotalHTMLU += `<th class="num-col" style="background: rgba(1, 12, 61, 0.6);">100.00%</th>`;
+            });
+            qyTotalHTMLU += `<th class="num-col" style="border-left: 2px solid var(--card-border);">${Math.round(unitsGrandTotal).toLocaleString()}</th>`;
+            qyTotalHTMLU += `<th class="num-col">100.00%</th>`;
+            qyTrTotalU.innerHTML = qyTotalHTMLU;
+            if (qyUnitsBody) qyUnitsBody.appendChild(qyTrTotalU);
+
+            // Quarterly Totals Row (Cost)
+            const qyTrTotalC = document.createElement('tr');
+            qyTrTotalC.className = 'totals-row';
+            let qyTotalHTMLC = `<td class="sticky-col">Total general</td>`;
+            qyYears.forEach(yr => {
+                qyYearsMap[yr].forEach(col => {
+                    qyTotalHTMLC += `<th class="num-col">L ${Math.round(qyGlobalC[col]).toLocaleString()}</th>`;
+                    qyTotalHTMLC += `<th class="num-col">100.00%</th>`;
+                });
+                qyTotalHTMLC += `<th class="num-col" style="background: rgba(1, 12, 61, 0.6); border-left: 2px solid var(--card-border);">L ${Math.round(qyYearGlobalC[yr]).toLocaleString()}</th>`;
+                qyTotalHTMLC += `<th class="num-col" style="background: rgba(1, 12, 61, 0.6);">100.00%</th>`;
+            });
+            qyTotalHTMLC += `<th class="num-col" style="border-left: 2px solid var(--card-border);">L ${Math.round(costGrandTotal).toLocaleString()}</th>`;
+            qyTotalHTMLC += `<th class="num-col">100.00%</th>`;
+            qyTrTotalC.innerHTML = qyTotalHTMLC;
+            if (qyCostBody) qyCostBody.appendChild(qyTrTotalC);
         }
 
         function switchTableTab(tab) {
@@ -2116,16 +2375,39 @@
             const containerUnits = document.getElementById('table-units-container');
             const containerCost = document.getElementById('table-cost-container');
 
+            if (btnUnits) btnUnits.classList.remove('active');
+            if (btnCost) btnCost.classList.remove('active');
+            
+            if (containerUnits) containerUnits.style.display = 'none';
+            if (containerCost) containerCost.style.display = 'none';
+
             if (tab === 'units') {
-                btnUnits.classList.add('active');
-                btnCost.classList.remove('active');
-                containerUnits.style.display = 'block';
-                containerCost.style.display = 'none';
-            } else {
-                btnUnits.classList.remove('active');
-                btnCost.classList.add('active');
-                containerUnits.style.display = 'none';
-                containerCost.style.display = 'block';
+                if (btnUnits) btnUnits.classList.add('active');
+                if (containerUnits) containerUnits.style.display = 'block';
+            } else if (tab === 'cost') {
+                if (btnCost) btnCost.classList.add('active');
+                if (containerCost) containerCost.style.display = 'block';
+            }
+        }
+
+        function switchQuarterlyTab(tab) {
+            const btnUnits = document.getElementById('tab-quarterly-units-btn');
+            const btnCost = document.getElementById('tab-quarterly-cost-btn');
+            const containerUnits = document.getElementById('table-quarterly-units-container');
+            const containerCost = document.getElementById('table-quarterly-cost-container');
+
+            if (btnUnits) btnUnits.classList.remove('active');
+            if (btnCost) btnCost.classList.remove('active');
+            
+            if (containerUnits) containerUnits.style.display = 'none';
+            if (containerCost) containerCost.style.display = 'none';
+
+            if (tab === 'units') {
+                if (btnUnits) btnUnits.classList.add('active');
+                if (containerUnits) containerUnits.style.display = 'block';
+            } else if (tab === 'cost') {
+                if (btnCost) btnCost.classList.add('active');
+                if (containerCost) containerCost.style.display = 'block';
             }
         }
 
@@ -2307,13 +2589,25 @@
             document.getElementById('costo-promedio').innerText = "L 86.04";
 
             // Construct staticData object matching getFilteredData() structure
+            // Convert official data into qy format
+            const mockQYCols = ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"];
+            const mockQYU = {};
+            const mockQYC = {};
+            Object.keys(officialUnits).forEach(r => {
+                mockQYU[r] = officialUnits[r];
+                mockQYC[r] = officialCosts[r] || {};
+            });
+
             const staticData = {
                 units: officialUnits,
                 costs: officialCosts,
+                qyUnits: mockQYU,
+                qyCosts: mockQYC,
+                qyCols: mockQYCols,
                 divisions: officialDivisions,
                 stores: officialStores,
                 colType: 'quarters',
-                columns: ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"],
+                columns: mockQYCols,
                 totals: {
                     units: 785969,
                     cost: 67627498.53,
