@@ -1,35 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dashboard de Análisis de Devoluciones de Mercadería - Tiendas El Compadre.">
     <title>Dashboard de Devoluciones | Tiendas El Compadre</title>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Chart.js & PapaParse -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    
+
     <style>
         :root {
             /* El Compadre Palette - Dark Mode (Default) */
             --bg-gradient: linear-gradient(135deg, #05070f 0%, #0c1020 50%, #010c3d 100%);
             --card-bg: rgba(12, 16, 32, 0.75);
             --card-border: rgba(255, 255, 255, 0.08);
-            
-            --accent-red: #E1251B; /* Rojo Compadre Pantone 485 C */
+
+            --accent-red: #E1251B;
+            /* Rojo Compadre Pantone 485 C */
             --accent-red-glow: rgba(225, 37, 27, 0.25);
-            --accent-blue: #012094; /* Azul Compadre Pantone 2756 C */
+            --accent-blue: #012094;
+            /* Azul Compadre Pantone 2756 C */
             --accent-blue-glow: rgba(1, 32, 148, 0.35);
-            
+
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
-            
+
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #E1251B;
@@ -43,15 +48,15 @@
             --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 50%, #d1d5db 100%);
             --card-bg: rgba(255, 255, 255, 0.88);
             --card-border: rgba(1, 32, 148, 0.1);
-            
+
             --accent-red: #E1251B;
             --accent-red-glow: rgba(225, 37, 27, 0.15);
             --accent-blue: #012094;
             --accent-blue-glow: rgba(1, 32, 148, 0.12);
-            
+
             --text-main: #0c1020;
             --text-muted: #6b7280;
-            
+
             --success: #059669;
             --warning: #d97706;
             --danger: #E1251B;
@@ -93,6 +98,7 @@
             box-shadow: var(--shadow);
             margin-bottom: 1.5rem;
             position: relative;
+            min-width: 0;
         }
 
         /* Dashboard Header Layout */
@@ -161,8 +167,8 @@
 
         /* Filters Section */
         .filters-panel {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 0.75rem;
             width: 100%;
             padding-top: 1rem;
@@ -173,6 +179,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
+            flex: 1 1 130px;
         }
 
         .filter-label {
@@ -314,8 +321,13 @@
             border-left: 5px solid var(--accent-blue);
         }
 
-        .kpi-card.kpi-costo { border-left-color: var(--accent-red); }
-        .kpi-card.kpi-promedio { border-left-color: var(--warning); }
+        .kpi-card.kpi-costo {
+            border-left-color: var(--accent-red);
+        }
+
+        .kpi-card.kpi-promedio {
+            border-left-color: var(--warning);
+        }
 
         .kpi-header {
             display: flex;
@@ -339,9 +351,17 @@
             margin-top: 0.25rem;
         }
 
-        .kpi-value.val-unidades { color: var(--text-main); }
-        .kpi-value.val-costo { color: var(--accent-red); }
-        .kpi-value.val-promedio { color: var(--warning); }
+        .kpi-value.val-unidades {
+            color: var(--text-main);
+        }
+
+        .kpi-value.val-costo {
+            color: var(--accent-red);
+        }
+
+        .kpi-value.val-promedio {
+            color: var(--warning);
+        }
 
         .kpi-subtext {
             font-size: 0.75rem;
@@ -398,7 +418,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
-            text-align: left;
+            text-align: center;
         }
 
         table.dashboard-table th {
@@ -408,6 +428,7 @@
             padding: 0.75rem 1rem;
             border-bottom: 2px solid var(--card-border);
             white-space: nowrap;
+            text-align: center;
         }
 
         table.dashboard-table td {
@@ -415,6 +436,7 @@
             border-bottom: 1px solid var(--card-border);
             color: var(--text-main);
             white-space: nowrap;
+            text-align: center;
         }
 
         table.dashboard-table tr:hover td {
@@ -424,12 +446,42 @@
         table.dashboard-table tr.totals-row td {
             font-weight: 700;
             background: rgba(1, 12, 61, 0.8);
+            color: #ffffff !important;
             border-bottom: double 3px var(--card-border);
         }
 
         .num-col {
-            text-align: right;
+            text-align: center;
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+        }
+
+        table.dashboard-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        
+        table.dashboard-table th.sortable:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        table.dashboard-table th.sortable::after {
+            content: '↕';
+            font-size: 0.7rem;
+            margin-left: 5px;
+            opacity: 0.3;
+        }
+        
+        table.dashboard-table th.sortable.sort-asc::after {
+            content: '▲';
+            opacity: 1;
+            color: var(--accent-red);
+        }
+        
+        table.dashboard-table th.sortable.sort-desc::after {
+            content: '▼';
+            opacity: 1;
+            color: var(--accent-red);
         }
 
         .text-bold {
@@ -446,21 +498,25 @@
 
         /* Dark Theme Sticky Backgrounds */
         table.dashboard-table th.sticky-col {
-            background: #060b21; /* Opaque header color */
-            box-shadow: 2px 0 5px rgba(0,0,0,0.4);
+            background: #060b21;
+            /* Opaque header color */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.4);
         }
 
         table.dashboard-table td.sticky-col {
-            background: #0c1020; /* Opaque card color */
-            box-shadow: 2px 0 5px rgba(0,0,0,0.4);
+            background: #0c1020;
+            /* Opaque card color */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.4);
         }
 
         table.dashboard-table tr:hover td.sticky-col {
-            background: #151a30; /* Opaque hover color */
+            background: #151a30;
+            /* Opaque hover color */
         }
-        
+
         table.dashboard-table tr.totals-row td.sticky-col {
-            background: #010c3d; /* Opaque totals row color */
+            background: #010c3d;
+            /* Opaque totals row color */
         }
 
         /* Light Theme Sticky Backgrounds */
@@ -477,7 +533,7 @@
         [data-theme="light"] table.dashboard-table tr:hover td.sticky-col {
             background: #f0f2f5;
         }
-        
+
         [data-theme="light"] table.dashboard-table tr.totals-row td.sticky-col {
             background: #d1d5db;
         }
@@ -584,6 +640,7 @@
             min-height: 380px;
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .chart-box {
@@ -798,10 +855,11 @@
         }
     </style>
 </head>
-<body data-theme="dark">
+
+<body data-theme="light">
 
     <div class="container">
-        
+
         <!-- Header -->
         <header class="glass-card dashboard-header" style="margin-bottom: 1rem; padding: 1.25rem 1.5rem;">
             <div class="header-top">
@@ -968,6 +1026,20 @@
             </div>
         </section>
 
+        <!-- Static Trend Chart Section -->
+        <section class="glass-card" style="margin-top: 1.5rem; width: 100%; min-width: 0;">
+            <div class="section-header">
+                <h2 id="static-trend-title"><span style="margin-right: 8px;">📈</span>Tendencia Mensual Histórica - Costo (L)</h2>
+                <div class="tabs-buttons">
+                    <button class="tab-btn" onclick="switchStaticTrendTab('units')" id="tab-static-units-btn">Unidades</button>
+                    <button class="tab-btn active" onclick="switchStaticTrendTab('cost')" id="tab-static-cost-btn">Costo (L)</button>
+                </div>
+            </div>
+            <div style="position: relative; height: 350px; width: 100%;">
+                <canvas id="static-trend-chart"></canvas>
+            </div>
+        </section>
+
         <!-- Business Q&A (Directores Logística y Operaciones) -->
         <section class="glass-card">
             <div class="section-header">
@@ -990,7 +1062,8 @@
                 <div class="qa-card">
                     <div class="qa-question">¿Qué porcentaje del costo total ya se recepcionó en CEDI Central?</div>
                     <div class="qa-badge" id="qa-q3-badge">0%</div>
-                    <div class="qa-answer" id="qa-q3-ans">Porcentaje ingresado vs mercadería pendiente/en tránsito.</div>
+                    <div class="qa-answer" id="qa-q3-ans">Porcentaje ingresado vs mercadería pendiente/en tránsito.
+                    </div>
                 </div>
                 <div class="qa-card">
                     <div class="qa-question">¿Cuál es el departamento (División) con mayor costo de devolución?</div>
@@ -1012,13 +1085,14 @@
 
         <!-- Main Dashboard Section: Table and Trend -->
         <section class="dashboard-layout">
-            
+
             <!-- Table Section -->
             <div class="glass-card" id="table-card">
                 <div class="section-header">
                     <h2 id="table-title">Distribución por Motivo</h2>
                     <div class="tabs-buttons">
-                        <button class="tab-btn active" onclick="switchTableTab('units')" id="tab-units-btn">Unidades</button>
+                        <button class="tab-btn active" onclick="switchTableTab('units')"
+                            id="tab-units-btn">Unidades</button>
                         <button class="tab-btn" onclick="switchTableTab('cost')" id="tab-cost-btn">Costo (L)</button>
                     </div>
                 </div>
@@ -1064,20 +1138,26 @@
             <div class="section-header">
                 <h2>Comparativo Trimestral Analítico</h2>
                 <div class="tabs-buttons">
-                    <button class="tab-btn active" onclick="switchQuarterlyTab('units')" id="tab-quarterly-units-btn">Unidades</button>
-                    <button class="tab-btn" onclick="switchQuarterlyTab('cost')" id="tab-quarterly-cost-btn">Costo (L)</button>
+                    <button class="tab-btn active" onclick="switchQuarterlyTab('units')"
+                        id="tab-quarterly-units-btn">Unidades</button>
+                    <button class="tab-btn" onclick="switchQuarterlyTab('cost')" id="tab-quarterly-cost-btn">Costo
+                        (L)</button>
                 </div>
             </div>
             <div class="table-responsive" id="table-quarterly-container">
                 <div id="table-quarterly-units-container" style="display: block; margin-bottom: 20px;">
-                    <h3 style="text-align: center; margin: 15px 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-transform: uppercase; font-weight: 800;">TABLA UNIDADES Y % DE PARTICIPACION POR TRIMESTRE</h3>
+                    <h3
+                        style="text-align: center; margin: 15px 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-transform: uppercase; font-weight: 800;">
+                        TABLA UNIDADES Y % DE PARTICIPACION POR TRIMESTRE</h3>
                     <table class="dashboard-table" id="table-quarterly-units">
                         <thead id="table-quarterly-units-head"></thead>
                         <tbody id="table-quarterly-units-body"></tbody>
                     </table>
                 </div>
                 <div id="table-quarterly-cost-container" style="display: none;">
-                    <h3 style="text-align: center; margin: 15px 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-transform: uppercase; font-weight: 800;">TABLA COSTO Y % DE PARTICIPACION POR TRIMESTRE</h3>
+                    <h3
+                        style="text-align: center; margin: 15px 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; text-transform: uppercase; font-weight: 800;">
+                        TABLA COSTO Y % DE PARTICIPACION POR TRIMESTRE</h3>
                     <table class="dashboard-table" id="table-quarterly-cost">
                         <thead id="table-quarterly-cost-head"></thead>
                         <tbody id="table-quarterly-cost-body"></tbody>
@@ -1086,9 +1166,68 @@
             </div>
         </section>
 
+        <!-- Managerial Comparison Section -->
+        <section class="glass-card" style="margin-top: 1.5rem; width: 100%; min-width: 0;">
+            <div class="section-header">
+                <h2><span style="margin-right: 8px;">📊</span>Análisis Comparativo - Vista Gerencial</h2>
+            </div>
+            <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                    <div>
+                        <label class="filter-label" style="display:block; margin-bottom: 0.25rem;">Nivel de Agrupación</label>
+                        <select id="c-nivel-devoluciones" class="filter-select" style="min-width: 150px;" onchange="renderComparativoGerencial()">
+                            <option value="DIVISION">Por División</option>
+                            <option value="MOTIVO">Por Motivo</option>
+                            <option value="TIENDA">Por Tienda</option>
+                            <option value="TIPO_TIENDA">Por Tipo de Tienda</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label" style="display:block; margin-bottom: 0.25rem;">Modo de Visualización</label>
+                        <select id="c-modo-vista" class="filter-select" style="min-width: 150px;" onchange="toggleComparativoModo()">
+                            <option value="ESTANDAR">Vista Estándar (3 Años)</option>
+                            <option value="LIBRE">Vista Libre (P1 vs P2)</option>
+                        </select>
+                    </div>
+                    <div id="c-filtros-libre" style="display: none; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+                        <div>
+                            <label class="filter-label" style="display:block; margin-bottom: 0.25rem;">Escala</label>
+                            <select id="c-tipo-periodo" class="filter-select" style="min-width: 120px;" onchange="updatePeriodOptions()">
+                                <option value="ANUAL">Año</option>
+                                <option value="TRIMESTRAL">Trimestre</option>
+                                <option value="MENSUAL">Mes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="filter-label" style="display:block; margin-bottom: 0.25rem;">Base (P1)</label>
+                            <select id="c-periodo-1" class="filter-select" style="min-width: 120px;" onchange="renderComparativoGerencial()"></select>
+                        </div>
+                        <div>
+                            <label class="filter-label" style="display:block; margin-bottom: 0.25rem;">Comparar (P2)</label>
+                            <select id="c-periodo-2" class="filter-select" style="min-width: 120px;" onchange="renderComparativoGerencial()"></select>
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--card-border);">
+                    <span style="color: var(--danger);">▲ Rojo: Empeoramiento (Aumento)</span> | 
+                    <span style="color: var(--success);">▼ Verde: Mejora (Reducción)</span>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table" id="tabla-comparativo-gerencial">
+                    <thead id="tabla-comparativo-head">
+                        <!-- Dynamic Headers -->
+                    </thead>
+                    <tbody id="tabla-comparativo-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- Charts Container (Pareto & Division) -->
         <section class="charts-container">
-            
+
             <div class="glass-card chart-card">
                 <div class="section-header">
                     <h2>Pareto de Motivos de Devolución (Haz clic para filtrar)</h2>
@@ -1111,7 +1250,7 @@
 
         <!-- Top Stores & Motives Section -->
         <section class="dashboard-layout">
-            
+
             <!-- Stacked Top Stores Chart -->
             <div class="glass-card chart-card">
                 <div class="section-header">
@@ -1123,7 +1262,8 @@
             </div>
 
             <!-- Top Stores Table & New Stores Audit -->
-            <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
+            <div class="glass-card"
+                style="display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
                 <div>
                     <div class="section-header">
                         <h2 id="top-stores-title">Top 15 Tiendas (Detalle Financiero)</h2>
@@ -1196,14 +1336,16 @@
         let storeMapGlobal = {}; // Global reference for store reason details
         let allDivisionsList = [];
         let allStoresList = [];
-        
-        let activeTheme = 'dark';
+
+        let activeTheme = 'light';
 
         // Chart.js Instances
         let chartTrend = null;
         let chartPareto = null;
         let chartDivision = null;
+        let chartStaticTrend = null;
         let chartStores = null;
+        let staticTrendMode = 'cost';
 
         // Reason mapping and colors
         const catMap = {
@@ -1242,21 +1384,21 @@
 
         // 1. EMBEDDED OFFICIAL REPORT DATA (Matches Image Exactly)
         const officialUnits = {
-            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": {"Q1 2025": 57503, "Q2 2025": 61073, "Q3 2025": 131746, "Q4 2025": 110635, "Q1 2026": 185119, "total": 546076, "%": 69.48, "prom": 96.08},
-            "TEMPORADA": {"Q1 2025": 9069, "Q2 2025": 5503, "Q3 2025": 8217, "Q4 2025": 13104, "Q1 2026": 71679, "total": 107572, "%": 13.69, "prom": 39.96},
-            "DAÑADO": {"Q1 2025": 10156, "Q2 2025": 10647, "Q3 2025": 10144, "Q4 2025": 7507, "Q1 2026": 14346, "total": 57592, "%": 7.33, "prom": 55.24},
-            "EXCESO DE INVENTARIO": {"Q1 2025": 17747, "Q2 2025": 2118, "Q3 2025": 6879, "Q4 2025": 1868, "Q1 2026": 12222, "total": 40834, "%": 5.20, "prom": 114.31},
-            "LENTA ROTACIÓN / REFRESCAMIENTO": {"Q1 2025": 9189, "Q2 2025": 3192, "Q3 2025": 1563, "Q4 2025": 2988, "Q1 2026": 19138, "total": 26863, "%": 3.42, "prom": 85.23},
-            "AUTORIZADO POR GERENCIA": {"Q1 2025": 1689, "Q2 2025": 613, "Q3 2025": 2595, "Q4 2025": 987, "Q1 2026": 1148, "total": 7032, "%": 0.89, "prom": 102.43}
+            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": { "Q1 2025": 57503, "Q2 2025": 61073, "Q3 2025": 131746, "Q4 2025": 110635, "Q1 2026": 185119, "total": 546076, "%": 69.48, "prom": 96.08 },
+            "TEMPORADA": { "Q1 2025": 9069, "Q2 2025": 5503, "Q3 2025": 8217, "Q4 2025": 13104, "Q1 2026": 71679, "total": 107572, "%": 13.69, "prom": 39.96 },
+            "DAÑADO": { "Q1 2025": 10156, "Q2 2025": 10647, "Q3 2025": 10144, "Q4 2025": 7507, "Q1 2026": 14346, "total": 57592, "%": 7.33, "prom": 55.24 },
+            "EXCESO DE INVENTARIO": { "Q1 2025": 17747, "Q2 2025": 2118, "Q3 2025": 6879, "Q4 2025": 1868, "Q1 2026": 12222, "total": 40834, "%": 5.20, "prom": 114.31 },
+            "LENTA ROTACIÓN / REFRESCAMIENTO": { "Q1 2025": 9189, "Q2 2025": 3192, "Q3 2025": 1563, "Q4 2025": 2988, "Q1 2026": 19138, "total": 26863, "%": 3.42, "prom": 85.23 },
+            "AUTORIZADO POR GERENCIA": { "Q1 2025": 1689, "Q2 2025": 613, "Q3 2025": 2595, "Q4 2025": 987, "Q1 2026": 1148, "total": 7032, "%": 0.89, "prom": 102.43 }
         };
 
         const officialCosts = {
-            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": {"Q1 2025": 5653343, "Q2 2025": 6146505, "Q3 2025": 17879197, "Q4 2025": 11086194, "Q1 2026": 11704162, "total": 52469402, "%": 77.59},
-            "EXCESO DE INVENTARIO": {"Q1 2025": 1952970, "Q2 2025": 233739, "Q3 2025": 980949, "Q4 2025": 116646, "Q1 2026": 1383568, "total": 4667873, "%": 6.90},
-            "TEMPORADA": {"Q1 2025": 287256, "Q2 2025": 536747, "Q3 2025": 943680, "Q4 2025": 557594, "Q1 2026": 1973357, "total": 4298634, "%": 6.36},
-            "DAÑADO": {"Q1 2025": 671248, "Q2 2025": 599632, "Q3 2025": 566855, "Q4 2025": 429637, "Q1 2026": 914276, "total": 3181648, "%": 4.71},
-            "LENTA ROTACIÓN / REFRESCAMIENTO": {"Q1 2025": 786899, "Q2 2025": 287965, "Q3 2025": 130493, "Q4 2025": 268626, "Q1 2026": 815637, "total": 2289620, "%": 3.39},
-            "AUTORIZADO POR GERENCIA": {"Q1 2025": 193486, "Q2 2025": 60232, "Q3 2025": 273133, "Q4 2025": 126691, "Q1 2026": 66781, "total": 720322, "%": 1.07}
+            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": { "Q1 2025": 5653343, "Q2 2025": 6146505, "Q3 2025": 17879197, "Q4 2025": 11086194, "Q1 2026": 11704162, "total": 52469402, "%": 77.59 },
+            "EXCESO DE INVENTARIO": { "Q1 2025": 1952970, "Q2 2025": 233739, "Q3 2025": 980949, "Q4 2025": 116646, "Q1 2026": 1383568, "total": 4667873, "%": 6.90 },
+            "TEMPORADA": { "Q1 2025": 287256, "Q2 2025": 536747, "Q3 2025": 943680, "Q4 2025": 557594, "Q1 2026": 1973357, "total": 4298634, "%": 6.36 },
+            "DAÑADO": { "Q1 2025": 671248, "Q2 2025": 599632, "Q3 2025": 566855, "Q4 2025": 429637, "Q1 2026": 914276, "total": 3181648, "%": 4.71 },
+            "LENTA ROTACIÓN / REFRESCAMIENTO": { "Q1 2025": 786899, "Q2 2025": 287965, "Q3 2025": 130493, "Q4 2025": 268626, "Q1 2026": 815637, "total": 2289620, "%": 3.39 },
+            "AUTORIZADO POR GERENCIA": { "Q1 2025": 193486, "Q2 2025": 60232, "Q3 2025": 273133, "Q4 2025": 126691, "Q1 2026": 66781, "total": 720322, "%": 1.07 }
         };
 
         const officialDivisions = [
@@ -1414,19 +1556,35 @@
         function toggleTheme() {
             const body = document.body;
             const themeBtn = document.getElementById('theme-btn');
-            if (activeTheme === 'dark') {
-                body.setAttribute('data-theme', 'light');
-                activeTheme = 'light';
+            if (activeTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                activeTheme = 'dark';
                 themeBtn.innerText = '☀️';
             } else {
-                body.removeAttribute('data-theme');
-                activeTheme = 'dark';
+                body.setAttribute('data-theme', 'light');
+                activeTheme = 'light';
                 themeBtn.innerText = '🌙';
             }
             if (rawData.length > 0) {
                 renderDashboard();
             } else {
                 renderStaticOfficialDashboard();
+            }
+        }
+
+        function switchStaticTrendTab(mode) {
+            staticTrendMode = mode;
+            if (mode === 'units') {
+                document.getElementById('tab-static-units-btn').classList.add('active');
+                document.getElementById('tab-static-cost-btn').classList.remove('active');
+                document.getElementById('static-trend-title').innerHTML = '<span style="margin-right: 8px;">📈</span>Tendencia Mensual Histórica - Unidades';
+            } else {
+                document.getElementById('tab-static-units-btn').classList.remove('active');
+                document.getElementById('tab-static-cost-btn').classList.add('active');
+                document.getElementById('static-trend-title').innerHTML = '<span style="margin-right: 8px;">📈</span>Tendencia Mensual Histórica - Costo (L)';
+            }
+            if (rawData.length > 0) {
+                renderDashboard();
             }
         }
 
@@ -1456,30 +1614,30 @@
         window.addEventListener('DOMContentLoaded', () => {
             // Load initial static view based on the PDF/Image data
             renderStaticOfficialDashboard();
-            
+
             // Try loading CSV dynamically
             Papa.parse("devoluciones.csv", {
                 download: true,
                 header: true,
                 delimiter: ";",
                 skipEmptyLines: true,
-                complete: function(results) {
+                complete: function (results) {
                     rawData = results.data;
-                    
+
                     // Run initial scanner for store first return years
                     scanStoresHistory();
 
                     // Initialize multi-select list options from CSV data
                     initializeFilterDropdowns();
-                    
+
                     document.getElementById('status-dot').className = 'status-dot';
                     document.getElementById('status-text').innerText = `CSV cargado dinámicamente con ${rawData.length.toLocaleString()} filas. Filtros 100% activos.`;
                     showToast("Base de datos de El Compadre vinculada. ¡Filtros avanzados activados!");
-                    
+
                     // Render Dashboard dynamically using the loaded CSV
                     renderDashboard();
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log("Could not load CSV locally due to CORS or file missing. Staying in static report mode.", err);
                     document.getElementById('status-dot').className = 'status-dot warning';
                     document.getElementById('status-text').innerText = "Ejecutando en Modo Reporte (Fallback - Datos de Auditoría). Levanta un servidor local para explorar el CSV.";
@@ -1507,16 +1665,16 @@
             if (event) event.stopPropagation();
             const dropdown = document.getElementById(id);
             const isOpen = dropdown.classList.contains('open');
-            
+
             document.querySelectorAll('.multiselect-dropdown').forEach(d => {
                 d.classList.remove('open');
             });
-            
+
             if (!isOpen) {
                 dropdown.classList.add('open');
             }
         }
-        
+
         window.addEventListener('click', () => {
             document.querySelectorAll('.multiselect-dropdown').forEach(d => {
                 d.classList.remove('open');
@@ -1527,18 +1685,20 @@
             const div = document.createElement('div');
             div.className = `multiselect-option ${isDisabled ? 'disabled' : ''}`;
             if (isDisabled) div.title = "No disponible con los filtros actuales";
-            
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = value;
             checkbox.checked = isChecked;
             if (isDisabled) checkbox.disabled = true;
+            checkbox.onclick = (e) => e.stopPropagation();
             checkbox.onchange = (e) => {
                 e.stopPropagation();
                 onToggle(value, checkbox.checked);
             };
 
             div.onclick = (e) => {
+                e.stopPropagation(); // Avoid closing the dropdown menu instantly
                 if (isDisabled) return;
                 checkbox.checked = !checkbox.checked;
                 onToggle(value, checkbox.checked);
@@ -1563,6 +1723,7 @@
             allStoresList = Array.from(stores).sort();
 
             updateDropdownSelectors();
+            updatePeriodOptions();
         }
 
         function getEnabledOptionsFor(type) {
@@ -1625,7 +1786,7 @@
             if (rawData.length === 0) {
                 fullList.forEach(val => {
                     const label = labelMapping ? (labelMapping[val] || val) : val;
-                    const optDiv = createDropdownOption(val, label, false, true, () => {});
+                    const optDiv = createDropdownOption(val, label, false, true, () => { });
                     optionsEl.appendChild(optDiv);
                 });
                 return;
@@ -1639,7 +1800,7 @@
                 selectAllDiv.className = 'multiselect-option';
                 selectAllDiv.style.borderBottom = '1px solid var(--card-border)';
                 selectAllDiv.style.fontWeight = 'bold';
-                
+
                 // Checked if all enabled options are selected
                 const enabledChecked = enabledList.length > 0 && enabledList.every(v => selectedList.includes(v));
 
@@ -1667,7 +1828,7 @@
                 const isChecked = selectedList.includes(val);
                 const isDisabled = !enabledList.includes(val) && !isChecked;
                 const label = labelMapping ? (labelMapping[val] || val) : val;
-                
+
                 const optDiv = createDropdownOption(val, label, isChecked, isDisabled, (v, checked) => {
                     toggleFilterValue(type, v, checked);
                 });
@@ -1684,7 +1845,7 @@
             populateDropdownList('cia', ['AEC', 'DS'], selectedCompanies, 'Todas las CIAs', 'title-cia', 'options-cia');
             populateDropdownList('recepcion', ['RECEPCIONADO', 'NO RECEPCIONADO'], selectedReceptions, 'Todos los Estados', 'title-recepcion', 'options-recepcion');
             populateDropdownList('tipo_tienda', ['DETALLE', 'MAYOREO'], selectedStoreTypes, 'Todos los Tipos', 'title-tipo-tienda', 'options-tipo-tienda');
-            
+
             const allMotivos = Array.from(new Set(Object.values(catMap)));
             populateDropdownList('motivo', allMotivos, selectedMotivos, 'Todos los Motivos', 'title-motivo', 'options-motivo');
         }
@@ -1720,7 +1881,7 @@
 
         function toggleAllFilterOptions(type, isChecked) {
             if (rawData.length === 0) return;
-            
+
             let arr;
             if (type === 'year') arr = selectedYears;
             else if (type === 'quarter') arr = selectedQuarters;
@@ -1754,7 +1915,7 @@
             selectedStoreTypes = [];
 
             showToast("Filtros restablecidos a la vista general.");
-            
+
             if (rawData.length > 0) {
                 updateDropdownSelectors();
                 renderDashboard();
@@ -1791,7 +1952,7 @@
         function renderActiveFilterBadges() {
             const bar = document.getElementById('active-badges-bar');
             bar.innerHTML = '';
-            
+
             let hasActiveFilter = false;
 
             const addBadge = (text, type, value, isRed = false) => {
@@ -1813,7 +1974,7 @@
             selectedStoreTypes.forEach(v => addBadge(`Tipo: ${v}`, 'tipo_tienda', v));
 
             const hasSelectors = (selectedYears.length > 0 || selectedQuarters.length > 0 || selectedMonths.length > 0 || selectedDivisions.length > 0 || selectedCompanies.length > 0 || selectedReceptions.length > 0 || selectedStores.length > 0 || selectedMotivos.length > 0 || selectedStoreTypes.length > 0);
-            
+
             const floatBtn = document.getElementById('float-reset-btn');
             if (hasSelectors) {
                 floatBtn.style.display = 'flex';
@@ -1837,10 +1998,10 @@
 
             // Initialize Reasons
             const allReasons = Array.from(new Set(Object.values(catMap)));
-            
+
             const qyU = {};
             const qyC = {};
-            
+
             allReasons.forEach(r => {
                 uData[r] = { total: 0, prom: 0, "%": 0 };
                 cData[r] = { total: 0, "%": 0 };
@@ -1851,13 +2012,13 @@
             cData["OTROS"] = { total: 0, "%": 0 };
             qyU["OTROS"] = {};
             qyC["OTROS"] = {};
-            
+
             const qyColsSet = new Set();
 
             // Determine time columns depending on filters
             let colType = 'years';
             let cols = ["2024", "2025", "2026"];
-            
+
             if (selectedYears.length === 1) {
                 if (selectedQuarters.length === 1) {
                     if (selectedMonths.length === 1) {
@@ -1945,7 +2106,7 @@
                 }
                 uData[mappedReason].total += u;
                 cData[mappedReason].total += c;
-                
+
                 // Aggregate for Quarterly tables
                 const qyKey = `${dateObj.quarter} ${dateObj.year}`;
                 qyColsSet.add(qyKey);
@@ -2008,7 +2169,7 @@
             // Find New Stores in the filtered scope
             const activeYearNum = selectedYears.length === 1 ? parseInt(selectedYears[0], 10) : NaN;
             const newStoresList = [];
-            
+
             if (!isNaN(activeYearNum)) {
                 Object.keys(storeFirstYear).forEach(store => {
                     if (storeFirstYear[store] === activeYearNum) {
@@ -2083,8 +2244,300 @@
             // 5. Render Q&A Section
             renderQASection(data);
 
+            // Render Comparativo Gerencial
+            renderComparativoGerencial();
+
             // 6. Draw Charts
             drawCharts(data);
+        }
+
+        function updatePeriodOptions() {
+            const tipo = document.getElementById('c-tipo-periodo').value;
+            const p1 = document.getElementById('c-periodo-1');
+            const p2 = document.getElementById('c-periodo-2');
+            p1.innerHTML = ''; p2.innerHTML = '';
+            
+            let options = [];
+            if (tipo === 'ANUAL') {
+                options = ['2024', '2025', '2026'];
+            } else if (tipo === 'TRIMESTRAL') {
+                ['2024', '2025', '2026'].forEach(y => {
+                    ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => options.push(`${q} ${y}`));
+                });
+            } else if (tipo === 'MENSUAL') {
+                const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                ['2024', '2025', '2026'].forEach(y => {
+                    meses.forEach((m, i) => {
+                        options.push(`${i+1} ${y}`);
+                    });
+                });
+            }
+            
+            options.forEach(opt => {
+                let text = opt;
+                if(tipo === 'MENSUAL') {
+                    const parts = opt.split(' ');
+                    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    text = `${monthNames[parseInt(parts[0])-1]} ${parts[1]}`;
+                }
+                p1.add(new Option(text, opt));
+                p2.add(new Option(text, opt));
+            });
+            
+            if (options.length >= 2) {
+                if (tipo === 'ANUAL') {
+                    p1.value = '2025';
+                    p2.value = '2026';
+                } else if (tipo === 'TRIMESTRAL') {
+                    p1.value = 'Q1 2026';
+                    p2.value = 'Q2 2026'; 
+                } else {
+                    p1.value = '1 2026';
+                    p2.value = '2 2026';
+                }
+            }
+            renderComparativoGerencial();
+        }
+
+        function sortTable(tableId, colIndex, isNumeric) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr:not(.totals-row)'));
+            const totalsRow = tbody.querySelector('.totals-row');
+            
+            let dir = table.getAttribute(`data-sort-dir-${colIndex}`) === 'desc' ? 'asc' : 'desc';
+            table.setAttribute(`data-sort-dir-${colIndex}`, dir);
+            
+            table.querySelectorAll('th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+            const th = table.querySelectorAll('th')[colIndex];
+            if(th) th.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+
+            rows.sort((a, b) => {
+                let cellA = a.cells[colIndex];
+                let cellB = b.cells[colIndex];
+                if (!cellA || !cellB) return 0;
+                
+                let valA = cellA.innerText.replace(/,/g, '').replace(/L /g, '').replace(/%/g, '').replace(/[▲▼ ]/g, '').trim();
+                let valB = cellB.innerText.replace(/,/g, '').replace(/L /g, '').replace(/%/g, '').replace(/[▲▼ ]/g, '').trim();
+                
+                if (isNumeric) {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    return dir === 'asc' ? valA - valB : valB - valA;
+                } else {
+                    return dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+            });
+            
+            rows.forEach(r => tbody.appendChild(r));
+            if (totalsRow) tbody.appendChild(totalsRow);
+        }
+
+        function toggleComparativoModo() {
+            const modo = document.getElementById('c-modo-vista')?.value || 'ESTANDAR';
+            const divLibre = document.getElementById('c-filtros-libre');
+            if (modo === 'LIBRE') {
+                divLibre.style.display = 'flex';
+                if (document.getElementById('c-periodo-1').options.length === 0) {
+                    updatePeriodOptions();
+                } else {
+                    renderComparativoGerencial();
+                }
+            } else {
+                divLibre.style.display = 'none';
+                renderComparativoGerencial();
+            }
+        }
+
+        function renderComparativoGerencial() {
+            const tbody = document.getElementById('tabla-comparativo-body');
+            const thead = document.getElementById('tabla-comparativo-head');
+            if (!tbody || !thead) return;
+            const nivel = document.getElementById('c-nivel-devoluciones').value;
+            const modo = document.getElementById('c-modo-vista')?.value || 'ESTANDAR';
+
+            let keys = new Set();
+            let arr = [];
+            let html = '';
+
+            if (modo === 'ESTANDAR') {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="sticky-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 0, false)">Dimensión Analizada</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 1, true)">Unidades 2024</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 2, true)">Unidades 2025</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 3, true)">Unidades 2026</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 4, true)">Δ% Unidades (25-26)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 5, true)">Costo 2024 (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 6, true)">Costo 2025 (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 7, true)">Costo 2026 (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 8, true)">Δ% Costo (25-26)</th>
+                    </tr>
+                `;
+
+                let map2024 = {}; let map2025 = {}; let map2026 = {};
+                
+                rawData.forEach(row => {
+                    const dateObj = parseDMY(row.Fecha);
+                    if (!dateObj) return;
+                    const y = dateObj.year.toString();
+                    if (y !== '2024' && y !== '2025' && y !== '2026') return;
+                    
+                    if (selectedQuarters.length > 0 && !selectedQuarters.includes(dateObj.quarter)) return;
+                    if (selectedMonths.length > 0 && !selectedMonths.includes(dateObj.month.toString())) return;
+                    if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
+                    if (selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) return;
+                    if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
+                    if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
+                    if (selectedMotivos.length > 0 && !selectedMotivos.includes(catMap[row.Categoria_Final])) return;
+                    if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+
+                    let dimValue = "Desconocido";
+                    if (nivel === 'DIVISION') dimValue = row.Division;
+                    else if (nivel === 'MOTIVO') dimValue = catMap[row.Categoria_Final];
+                    else if (nivel === 'TIENDA') dimValue = row.Origen;
+                    else if (nivel === 'TIPO_TIENDA') dimValue = row.tipo_tienda;
+                    if(!dimValue) dimValue = "Desconocido";
+
+                    keys.add(dimValue);
+                    
+                    const u = parseFloat(row.unidades || 0);
+                    const c = parseFloat(row.costo || 0);
+                    
+                    if (y === '2024') {
+                        if(!map2024[dimValue]) map2024[dimValue] = {u:0, c:0};
+                        map2024[dimValue].u += u; map2024[dimValue].c += c;
+                    } else if (y === '2025') {
+                        if(!map2025[dimValue]) map2025[dimValue] = {u:0, c:0};
+                        map2025[dimValue].u += u; map2025[dimValue].c += c;
+                    } else if (y === '2026') {
+                        if(!map2026[dimValue]) map2026[dimValue] = {u:0, c:0};
+                        map2026[dimValue].u += u; map2026[dimValue].c += c;
+                    }
+                });
+
+                arr = Array.from(keys).map(k => {
+                    const d24 = map2024[k] || {u:0, c:0};
+                    const d25 = map2025[k] || {u:0, c:0};
+                    const d26 = map2026[k] || {u:0, c:0};
+                    const pctU = d25.u > 0 ? ((d26.u - d25.u)/d25.u)*100 : (d26.u > 0 ? 100 : 0);
+                    const pctC = d25.c > 0 ? ((d26.c - d25.c)/d25.c)*100 : (d26.c > 0 ? 100 : 0);
+                    return { name: k, u24: d24.u, u25: d25.u, u26: d26.u, pctU: pctU, c24: d24.c, c25: d25.c, c26: d26.c, pctC: pctC };
+                });
+                
+                arr.sort((a,b) => b.c26 - a.c26);
+                
+                arr.forEach(item => {
+                    const cUPct = item.pctU > 0 ? 'color: var(--danger);' : (item.pctU < 0 ? 'color: var(--success);' : '');
+                    const cCPct = item.pctC > 0 ? 'color: var(--danger);' : (item.pctC < 0 ? 'color: var(--success);' : '');
+                    html += `
+                        <tr>
+                            <td class="text-bold sticky-col">${item.name}</td>
+                            <td class="num-col">${Math.round(item.u24).toLocaleString()}</td>
+                            <td class="num-col">${Math.round(item.u25).toLocaleString()}</td>
+                            <td class="num-col text-bold">${Math.round(item.u26).toLocaleString()}</td>
+                            <td class="num-col text-bold" style="${cUPct}">${item.pctU > 0 ? '▲' : (item.pctU < 0 ? '▼' : '')} ${Math.abs(item.pctU).toFixed(1)}%</td>
+                            <td class="num-col">L ${Math.round(item.c24).toLocaleString()}</td>
+                            <td class="num-col">L ${Math.round(item.c25).toLocaleString()}</td>
+                            <td class="num-col text-bold">L ${Math.round(item.c26).toLocaleString()}</td>
+                            <td class="num-col text-bold" style="${cCPct}">${item.pctC > 0 ? '▲' : (item.pctC < 0 ? '▼' : '')} ${Math.abs(item.pctC).toFixed(1)}%</td>
+                        </tr>
+                    `;
+                });
+                if(arr.length === 0) html = `<tr><td colspan="9" style="text-align:center;">No hay datos para mostrar con los filtros actuales.</td></tr>`;
+
+            } else {
+                const tipo = document.getElementById('c-tipo-periodo')?.value || 'ANUAL';
+                const p1Val = document.getElementById('c-periodo-1')?.value || '2025';
+                const p2Val = document.getElementById('c-periodo-2')?.value || '2026';
+                
+                const p1Sel = document.getElementById('c-periodo-1');
+                const p2Sel = document.getElementById('c-periodo-2');
+                const p1Text = p1Sel ? p1Sel.options[p1Sel.selectedIndex].text : '2025';
+                const p2Text = p2Sel ? p2Sel.options[p2Sel.selectedIndex].text : '2026';
+
+                thead.innerHTML = `
+                    <tr>
+                        <th class="sticky-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 0, false)">Dimensión Analizada</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 1, true)">Unidades ${p1Text}</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 2, true)">Unidades ${p2Text}</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 3, true)">Δ% Unidades</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 4, true)">Costo ${p1Text} (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 5, true)">Costo ${p2Text} (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 6, true)">Δ% Costo</th>
+                    </tr>
+                `;
+
+                let mapP1 = {}; let mapP2 = {};
+                
+                rawData.forEach(row => {
+                    const dateObj = parseDMY(row.Fecha);
+                    if (!dateObj) return;
+                    
+                    let rowPeriod = '';
+                    if (tipo === 'ANUAL') rowPeriod = dateObj.year.toString();
+                    else if (tipo === 'TRIMESTRAL') rowPeriod = `${dateObj.quarter} ${dateObj.year}`;
+                    else if (tipo === 'MENSUAL') rowPeriod = `${dateObj.month} ${dateObj.year}`;
+                    
+                    if (rowPeriod !== p1Val && rowPeriod !== p2Val) return;
+                    
+                    if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
+                    if (selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) return;
+                    if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
+                    if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
+                    if (selectedMotivos.length > 0 && !selectedMotivos.includes(catMap[row.Categoria_Final])) return;
+                    if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+
+                    let dimValue = "Desconocido";
+                    if (nivel === 'DIVISION') dimValue = row.Division;
+                    else if (nivel === 'MOTIVO') dimValue = catMap[row.Categoria_Final];
+                    else if (nivel === 'TIENDA') dimValue = row.Origen;
+                    else if (nivel === 'TIPO_TIENDA') dimValue = row.tipo_tienda;
+                    if(!dimValue) dimValue = "Desconocido";
+
+                    keys.add(dimValue);
+                    const u = parseFloat(row.unidades || 0);
+                    const c = parseFloat(row.costo || 0);
+                    
+                    if (rowPeriod === p1Val) {
+                        if(!mapP1[dimValue]) mapP1[dimValue] = {u:0, c:0};
+                        mapP1[dimValue].u += u; mapP1[dimValue].c += c;
+                    } 
+                    if (rowPeriod === p2Val) {
+                        if(!mapP2[dimValue]) mapP2[dimValue] = {u:0, c:0};
+                        mapP2[dimValue].u += u; mapP2[dimValue].c += c;
+                    }
+                });
+                
+                arr = Array.from(keys).map(k => {
+                    const d1 = mapP1[k] || {u:0, c:0};
+                    const d2 = mapP2[k] || {u:0, c:0};
+                    const pctU = d1.u > 0 ? ((d2.u - d1.u)/d1.u)*100 : (d2.u > 0 ? 100 : 0);
+                    const pctC = d1.c > 0 ? ((d2.c - d1.c)/d1.c)*100 : (d2.c > 0 ? 100 : 0);
+                    return { name: k, u1: d1.u, u2: d2.u, pctU: pctU, c1: d1.c, c2: d2.c, pctC: pctC };
+                });
+                
+                arr.sort((a,b) => b.c2 - a.c2);
+                
+                arr.forEach(item => {
+                    const cUPct = item.pctU > 0 ? 'color: var(--danger);' : (item.pctU < 0 ? 'color: var(--success);' : '');
+                    const cCPct = item.pctC > 0 ? 'color: var(--danger);' : (item.pctC < 0 ? 'color: var(--success);' : '');
+                    html += `
+                        <tr>
+                            <td class="text-bold sticky-col">${item.name}</td>
+                            <td class="num-col">${Math.round(item.u1).toLocaleString()}</td>
+                            <td class="num-col text-bold">${Math.round(item.u2).toLocaleString()}</td>
+                            <td class="num-col text-bold" style="${cUPct}">${item.pctU > 0 ? '▲' : (item.pctU < 0 ? '▼' : '')} ${Math.abs(item.pctU).toFixed(1)}%</td>
+                            <td class="num-col">L ${Math.round(item.c1).toLocaleString()}</td>
+                            <td class="num-col text-bold">L ${Math.round(item.c2).toLocaleString()}</td>
+                            <td class="num-col text-bold" style="${cCPct}">${item.pctC > 0 ? '▲' : (item.pctC < 0 ? '▼' : '')} ${Math.abs(item.pctC).toFixed(1)}%</td>
+                        </tr>
+                    `;
+                });
+                if(arr.length === 0) html = `<tr><td colspan="7" style="text-align:center;">No hay datos para comparar ${p1Text} vs ${p2Text} con los filtros actuales.</td></tr>`;
+            }
+            
+            tbody.innerHTML = html;
         }
 
         // --- 7. DYNAMIC TABLE GENERATOR ---
@@ -2109,18 +2562,20 @@
             };
 
             // Dynamic HEADERS
-            let uHeadHTML = `<tr><th class="sticky-col">Categoría Final (Motivo)</th>`;
+            let uHeadHTML = `<tr><th class="sticky-col sortable" onclick="sortTable('table-units', 0, false)">Categoría Final (Motivo)</th>`;
+            let colIdx = 1;
             data.columns.forEach(col => {
-                uHeadHTML += `<th class="num-col">${getColLabel(col)}</th>`;
+                uHeadHTML += `<th class="num-col sortable" onclick="sortTable('table-units', ${colIdx++}, true)">${getColLabel(col)}</th>`;
             });
-            uHeadHTML += `<th class="num-col">Total Gral.</th><th class="num-col">% Part.</th><th class="num-col">Costo Prom.</th></tr>`;
+            uHeadHTML += `<th class="num-col sortable" onclick="sortTable('table-units', ${colIdx++}, true)">Total Gral.</th><th class="num-col sortable" onclick="sortTable('table-units', ${colIdx++}, true)">% Part.</th><th class="num-col sortable" onclick="sortTable('table-units', ${colIdx}, true)">Costo Prom.</th></tr>`;
             unitsHead.innerHTML = uHeadHTML;
 
-            let cHeadHTML = `<tr><th class="sticky-col">Categoría Final (Motivo)</th>`;
+            let cHeadHTML = `<tr><th class="sticky-col sortable" onclick="sortTable('table-cost', 0, false)">Categoría Final (Motivo)</th>`;
+            colIdx = 1;
             data.columns.forEach(col => {
-                cHeadHTML += `<th class="num-col">${getColLabel(col)}</th>`;
+                cHeadHTML += `<th class="num-col sortable" onclick="sortTable('table-cost', ${colIdx++}, true)">${getColLabel(col)}</th>`;
             });
-            cHeadHTML += `<th class="num-col">Total Gral.</th><th class="num-col">% Part.</th></tr>`;
+            cHeadHTML += `<th class="num-col sortable" onclick="sortTable('table-cost', ${colIdx++}, true)">Total Gral.</th><th class="num-col sortable" onclick="sortTable('table-cost', ${colIdx}, true)">% Part.</th></tr>`;
             costHead.innerHTML = cHeadHTML;
 
             // Sort Reasons by total units descending (except OTROS)
@@ -2219,7 +2674,7 @@
             const qyUnitsBody = document.getElementById('table-quarterly-units-body');
             const qyCostHead = document.getElementById('table-quarterly-cost-head');
             const qyCostBody = document.getElementById('table-quarterly-cost-body');
-            
+
             // Group QY Columns by Year to inject subtotals
             const qyYearsMap = {};
             data.qyCols.forEach(col => {
@@ -2252,13 +2707,13 @@
             });
             qyCHeadHTML += `<th class="num-col" style="border-left: 2px solid var(--card-border);">Total General</th><th class="num-col">% Part.</th></tr>`;
             if (qyCostHead) qyCostHead.innerHTML = qyCHeadHTML;
-            
+
             // Compute global totals per QY column & Yearly Subtotals
             const qyGlobalU = {};
             const qyGlobalC = {};
             const qyYearGlobalU = {};
             const qyYearGlobalC = {};
-            
+
             qyYears.forEach(yr => {
                 qyYearGlobalU[yr] = 0;
                 qyYearGlobalC[yr] = 0;
@@ -2284,7 +2739,7 @@
             // Fill Bodies
             if (qyUnitsBody) qyUnitsBody.innerHTML = '';
             if (qyCostBody) qyCostBody.innerHTML = '';
-            
+
             sortedCats.forEach(cat => {
                 const rowU = data.units[cat];
                 if (rowU.total === 0) return;
@@ -2299,14 +2754,14 @@
                         yrTotalU += val;
                         const pct = qyGlobalU[col] > 0 ? (val / qyGlobalU[col]) * 100 : 0;
                         htmlU += `<td class="num-col">${Math.round(val).toLocaleString()}</td>`;
-                        htmlU += `<td class="num-col" style="background: rgba(16, 185, 129, ${pct > 0 ? pct/100 * 0.7 : 0});">${pct.toFixed(2)}%</td>`;
+                        htmlU += `<td class="num-col" style="background: rgba(16, 185, 129, ${pct > 0 ? pct / 100 * 0.7 : 0});">${pct.toFixed(2)}%</td>`;
                     });
                     const yrPct = qyYearGlobalU[yr] > 0 ? (yrTotalU / qyYearGlobalU[yr]) * 100 : 0;
                     htmlU += `<td class="num-col text-bold" style="background: rgba(1, 12, 61, 0.4); border-left: 2px solid var(--card-border);">${Math.round(yrTotalU).toLocaleString()}</td>`;
                     htmlU += `<td class="num-col" style="background: rgba(1, 12, 61, 0.4);">${yrPct.toFixed(2)}%</td>`;
                 });
                 htmlU += `<td class="num-col text-bold" style="border-left: 2px solid var(--card-border);">${Math.round(rowU.total).toLocaleString()}</td>`;
-                htmlU += `<td class="num-col" style="background: rgba(16, 185, 129, ${rowU["%"] > 0 ? rowU["%"]/100 * 0.7 : 0});">${rowU["%"].toFixed(2)}%</td>`;
+                htmlU += `<td class="num-col" style="background: rgba(16, 185, 129, ${rowU["%"] > 0 ? rowU["%"] / 100 * 0.7 : 0});">${rowU["%"].toFixed(2)}%</td>`;
                 trU.innerHTML = htmlU;
                 if (qyUnitsBody) qyUnitsBody.appendChild(trU);
 
@@ -2321,14 +2776,14 @@
                         yrTotalC += val;
                         const pct = qyGlobalC[col] > 0 ? (val / qyGlobalC[col]) * 100 : 0;
                         htmlC += `<td class="num-col">L ${Math.round(val).toLocaleString()}</td>`;
-                        htmlC += `<td class="num-col" style="background: rgba(16, 185, 129, ${pct > 0 ? pct/100 * 0.7 : 0});">${pct.toFixed(2)}%</td>`;
+                        htmlC += `<td class="num-col" style="background: rgba(16, 185, 129, ${pct > 0 ? pct / 100 * 0.7 : 0});">${pct.toFixed(2)}%</td>`;
                     });
                     const yrPctC = qyYearGlobalC[yr] > 0 ? (yrTotalC / qyYearGlobalC[yr]) * 100 : 0;
                     htmlC += `<td class="num-col text-bold" style="background: rgba(1, 12, 61, 0.4); border-left: 2px solid var(--card-border);">L ${Math.round(yrTotalC).toLocaleString()}</td>`;
                     htmlC += `<td class="num-col" style="background: rgba(1, 12, 61, 0.4);">${yrPctC.toFixed(2)}%</td>`;
                 });
                 htmlC += `<td class="num-col text-bold" style="border-left: 2px solid var(--card-border);">L ${Math.round(rowC.total).toLocaleString()}</td>`;
-                htmlC += `<td class="num-col" style="background: rgba(16, 185, 129, ${rowC["%"] > 0 ? rowC["%"]/100 * 0.7 : 0});">${rowC["%"].toFixed(2)}%</td>`;
+                htmlC += `<td class="num-col" style="background: rgba(16, 185, 129, ${rowC["%"] > 0 ? rowC["%"] / 100 * 0.7 : 0});">${rowC["%"].toFixed(2)}%</td>`;
                 trC.innerHTML = htmlC;
                 if (qyCostBody) qyCostBody.appendChild(trC);
             });
@@ -2377,7 +2832,7 @@
 
             if (btnUnits) btnUnits.classList.remove('active');
             if (btnCost) btnCost.classList.remove('active');
-            
+
             if (containerUnits) containerUnits.style.display = 'none';
             if (containerCost) containerCost.style.display = 'none';
 
@@ -2398,7 +2853,7 @@
 
             if (btnUnits) btnUnits.classList.remove('active');
             if (btnCost) btnCost.classList.remove('active');
-            
+
             if (containerUnits) containerUnits.style.display = 'none';
             if (containerCost) containerCost.style.display = 'none';
 
@@ -2416,7 +2871,7 @@
             const titleEl = document.getElementById('top-stores-title');
             const theadEl = document.getElementById('table-stores-head');
             const tbodyEl = document.getElementById('table-stores-body');
-            
+
             if (selectedStores.length === 1) {
                 // Detail Mode for a single store
                 const storeName = selectedStores[0];
@@ -2429,25 +2884,25 @@
                         <th class="num-col">% Part.</th>
                     </tr>
                 `;
-                
+
                 // Get store data from global reference
                 const storeData = storeMapGlobal[storeName];
                 if (!storeData) {
                     tbodyEl.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin datos para esta sucursal</td></tr>`;
                     return;
                 }
-                
+
                 tbodyEl.innerHTML = '';
                 const sortedReasons = Object.keys(storeData.reasons)
                     .sort((a, b) => storeData.reasons[b] - storeData.reasons[a]);
-                
+
                 sortedReasons.forEach(reason => {
                     const units = storeData.reasons[reason];
                     const cost = storeData.reasonCosts ? (storeData.reasonCosts[reason] || 0) : 0;
                     if (units === 0 && cost === 0) return;
-                    
+
                     const pct = storeData.totalUnits > 0 ? (units / storeData.totalUnits) * 100 : 0;
-                    
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="text-bold">${reason}</td>
@@ -2457,7 +2912,7 @@
                     `;
                     tbodyEl.appendChild(tr);
                 });
-                
+
                 // Total row
                 const trTotal = document.createElement('tr');
                 trTotal.className = 'totals-row';
@@ -2499,7 +2954,7 @@
         function renderNewStoresList(newStoresList) {
             const box = document.getElementById('new-stores-list');
             box.innerHTML = '';
-            
+
             const activeYear = selectedYears.length === 1 ? selectedYears[0] : 'ALL';
 
             if (activeYear === 'ALL') {
@@ -2618,7 +3073,7 @@
 
             renderDynamicTables(staticData);
             renderTopStoresTable(officialStores);
-            
+
             // Render static Q&A
             document.getElementById('qa-q1-badge').innerText = "L 67,627,499";
             document.getElementById('qa-q1-ans').innerHTML = "Representa un total físico de <strong>785,969 unidades</strong> devueltas.";
@@ -2641,6 +3096,35 @@
                 <div class="new-store-row"><span class="text-bold">RIO LINDO-LV</span><span style="color: var(--text-muted); font-size: 0.75rem;">10,987 u | <strong>L 1,044,141</strong></span></div>
                 <div class="new-store-row"><span class="text-bold">SAN JUAN, INTIBUCA</span><span style="color: var(--text-muted); font-size: 0.75rem;">1,148 u | <strong>L 66,781</strong></span></div>
             `;
+
+            // Render static fallback comparison
+            const tbodyComp = document.getElementById('tabla-comparativo-body');
+            if (tbodyComp) {
+                tbodyComp.innerHTML = `
+                <tr>
+                    <td class="text-bold sticky-col">ROPA</td>
+                    <td class="num-col">350,000</td>
+                    <td class="num-col">420,120</td>
+                    <td class="num-col text-bold">365,849</td>
+                    <td class="num-col text-bold" style="color: var(--success);">▼ 12.9%</td>
+                    <td class="num-col">L 25,000,000</td>
+                    <td class="num-col">L 38,500,100</td>
+                    <td class="num-col text-bold">L 31,856,851</td>
+                    <td class="num-col text-bold" style="color: var(--success);">▼ 17.3%</td>
+                </tr>
+                <tr>
+                    <td class="text-bold sticky-col">HOGAR</td>
+                    <td class="num-col">120,000</td>
+                    <td class="num-col">150,000</td>
+                    <td class="num-col text-bold">185,000</td>
+                    <td class="num-col text-bold" style="color: var(--danger);">▲ 23.3%</td>
+                    <td class="num-col">L 10,000,000</td>
+                    <td class="num-col">L 12,000,000</td>
+                    <td class="num-col text-bold">L 15,400,000</td>
+                    <td class="num-col text-bold" style="color: var(--danger);">▲ 28.3%</td>
+                </tr>
+                `;
+            }
 
             drawCharts(staticData);
         }
@@ -2666,6 +3150,107 @@
             if (chartPareto) chartPareto.destroy();
             if (chartDivision) chartDivision.destroy();
             if (chartStores) chartStores.destroy();
+            if (chartStaticTrend) chartStaticTrend.destroy();
+
+            // STATIC TREND CHART (Independent of Global Filters)
+            const staticTrendCtx = document.getElementById('static-trend-chart')?.getContext('2d');
+            if (staticTrendCtx) {
+                const sMonths = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                const data24 = new Array(12).fill(0);
+                const data25 = new Array(12).fill(0);
+                const data26 = new Array(12).fill(0);
+
+                rawData.forEach(row => {
+                    const dateObj = parseDMY(row.Fecha);
+                    if (!dateObj) return;
+                    const mIdx = dateObj.month - 1;
+                    const val = staticTrendMode === 'cost' ? parseFloat(row.costo || 0) : parseFloat(row.unidades || 0);
+                    if (dateObj.year === 2024) data24[mIdx] += val;
+                    else if (dateObj.year === 2025) data25[mIdx] += val;
+                    else if (dateObj.year === 2026) data26[mIdx] += val;
+                });
+
+                const prefix = staticTrendMode === 'cost' ? 'L ' : '';
+                
+                chartStaticTrend = new Chart(staticTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: sMonths,
+                        datasets: [
+                            {
+                                label: '2024',
+                                data: data24,
+                                borderColor: '#10b981',
+                                backgroundColor: '#10b981',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                fill: false
+                            },
+                            {
+                                label: '2025',
+                                data: data25,
+                                borderColor: '#E1251B',
+                                backgroundColor: '#E1251B',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                fill: false
+                            },
+                            {
+                                label: '2026',
+                                data: data26,
+                                borderColor: '#012094',
+                                backgroundColor: '#012094',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#012094',
+                                tension: 0.1,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { position: 'top', labels: { color: chartConf.text } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.raw || 0;
+                                        if (staticTrendMode === 'cost') {
+                                            return context.dataset.label + ': L ' + val.toLocaleString();
+                                        } else {
+                                            return context.dataset.label + ': ' + val.toLocaleString() + ' unds';
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                grid: { color: chartConf.grid, display: false },
+                                ticks: { color: chartConf.text }
+                            },
+                            y: { 
+                                grid: { color: chartConf.grid },
+                                ticks: { 
+                                    color: chartConf.text,
+                                    callback: function(value) {
+                                        if (staticTrendMode === 'cost') {
+                                            if(value >= 1000000) return 'L ' + (value/1000000).toFixed(1) + 'M';
+                                            if(value >= 1000) return 'L ' + (value/1000).toFixed(0) + 'k';
+                                            return 'L ' + value;
+                                        } else {
+                                            if(value >= 1000) return (value/1000).toFixed(1) + 'k';
+                                            return value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
 
             // CHART 1: TREND (COST VS VOLUME)
             const trendCtx = document.getElementById('chart-trend').getContext('2d');
@@ -2843,7 +3428,7 @@
             // CHART 4: STACKED TOP STORES AND REASONS
             const storesCtx = document.getElementById('chart-stores').getContext('2d');
             const storeLabels = data.stores.map(s => s.name);
-            
+
             // Build datasets for each reason
             const reasonsToStack = Object.keys(reasonColors);
             const datasets = reasonsToStack.map(reason => {
@@ -2896,4 +3481,5 @@
         }
     </script>
 </body>
+
 </html>
