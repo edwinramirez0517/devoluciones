@@ -17,7 +17,8 @@
     <!-- Chart.js & PapaParse -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             /* El Compadre Palette - Dark Mode (Default) */
@@ -1812,85 +1813,87 @@ const staticStoreReason = [{"y":2026,"s":"CATACAMAS-AEC","r":"SOLICITADO POR ANA
             return false;
         };
 
-        function initApp() {
+function initApp() {
             try {
-                // Load initial static view dynamically with full interactive filters
+                // Carga inicial del modo estático para que el dashboard no quede en blanco mientras lee el ZIP
                 initializeStaticFilterDropdowns();
                 renderDashboard();
             } catch(e) {
                 console.error('Error en carga inicial:', e);
-                // Fallback: at minimum show static KPIs
                 try {
                     document.getElementById('total-unidades').innerText = '990,826';
                     document.getElementById('total-costo').innerText = 'L 71,750,359';
                     document.getElementById('costo-promedio').innerText = 'L 72.41';
-                } catch(e2) { console.error('Error en fallback KPIs:', e2); }
+                } catch(e2) { }
             }
 
-            // Try loading CSV dynamically
+            // Nueva lógica: Descargar ZIP -> Extraer CSV -> Leer con PapaParse
             try {
-                if (typeof Papa === 'undefined') {
-                    console.warn('PapaParse no disponible. Modo reporte estático.');
+                if (typeof JSZip === 'undefined' || typeof Papa === 'undefined') {
+                    console.warn('Librerías no disponibles. Modo reporte estático.');
                     return;
                 }
-                Papa.parse("devoluciones.csv", {
-                    download: true,
-                    header: true,
-                    delimiter: ";",
-                    skipEmptyLines: true,
-                    complete: function (results) {
-                        try {
-                            rawData = results.data.filter(row => {
-                                const dateObj = parseDMY(row.Fecha);
-                                const isValidString = (val) => {
-                                    if (!val) return false;
-                                    const clean = val.trim().toUpperCase();
-                                    return clean !== "" && clean !== "NAN" && clean !== "DESCONOCIDO" && clean !== "DESCONOCIDA" && clean !== "NULL" && clean !== "UNDEFINED";
-                                };
-                                return dateObj && 
-                                        dateObj.year !== 2024 && 
-                                        isValidString(row.Division) && 
-                                        isValidString(row.Origen) && 
-                                        isValidString(row.Categoria_Final);
-                            });
 
-                            // Run initial scanner for store first return years
-                            scanStoresHistory();
+                document.getElementById('status-text').innerText = "Descargando y extrayendo base de datos (ZIP)...";
 
-                            // Initialize multi-select list options from CSV data
-                            initializeFilterDropdowns();
+                fetch("devoluciones.zip")
+                    .then(response => {
+                        if (!response.ok) throw new Error("HTTP error " + response.status);
+                        return response.arrayBuffer();
+                    })
+                    .then(JSZip.loadAsync)
+                    .then(zip => {
+                        // Busca el archivo exacto dentro del zip
+                        return zip.file("devoluciones.csv").async("string");
+                    })
+                    .then(csvText => {
+                        // Le pasamos el texto directamente a PapaParse
+                        Papa.parse(csvText, {
+                            header: true,
+                            delimiter: ";", // Mantenemos tu delimitador original
+                            skipEmptyLines: true,
+                            complete: function (results) {
+                                try {
+                                    rawData = results.data.filter(row => {
+                                        const dateObj = parseDMY(row.Fecha);
+                                        const isValidString = (val) => {
+                                            if (!val) return false;
+                                            const clean = val.trim().toUpperCase();
+                                            return clean !== "" && clean !== "NAN" && clean !== "DESCONOCIDO" && clean !== "DESCONOCIDA" && clean !== "NULL" && clean !== "UNDEFINED";
+                                        };
+                                        return dateObj && 
+                                                dateObj.year !== 2024 && 
+                                                isValidString(row.Division) && 
+                                                isValidString(row.Origen) && 
+                                                isValidString(row.Categoria_Final);
+                                    });
 
-                            document.getElementById('status-dot').className = 'status-dot';
-                            document.getElementById('status-text').innerText = `CSV cargado dinámicamente con ${rawData.length.toLocaleString()} filas. Filtros 100% activos.`;
-                            showToast("Base de datos de El Compadre vinculada. ¡Filtros avanzados activados!");
+                                    scanStoresHistory();
+                                    initializeFilterDropdowns();
 
-                            // Render Dashboard dynamically using the loaded CSV
-                            renderDashboard();
-                        } catch(e) {
-                            console.error('Error procesando CSV:', e);
-                            // Fallback to static
-                            try { initializeStaticFilterDropdowns(); renderDashboard(); } catch(e2) { console.error('Error en fallback CSV:', e2); }
-                        }
-                    },
-                    error: function (err) {
-                        console.log("Could not load CSV locally due to CORS or file missing. Staying in static report mode.", err);
+                                    document.getElementById('status-dot').className = 'status-dot';
+                                    document.getElementById('status-text').innerText = `Datos extraídos del ZIP: ${rawData.length.toLocaleString()} filas. Filtros 100% activos.`;
+                                    showToast("Base de datos descomprimida correctamente. ¡Filtros avanzados activados!");
+
+                                    renderDashboard();
+                                } catch(e) {
+                                    console.error('Error procesando CSV extraído:', e);
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.log("No se pudo cargar el archivo ZIP. Manteniendo modo estático.", error);
                         try {
                             document.getElementById('status-dot').className = 'status-dot warning';
                             document.getElementById('status-text').innerText = "Ejecutando en Modo Reporte (Fallback - Datos de Auditoría). Filtros activos.";
-                            
-                            // Initialize static filter list options
                             initializeStaticFilterDropdowns();
-                            // Render Dashboard using static data aggregation
                             renderDashboard();
-                        } catch(e) {
-                            console.error('Error en error callback:', e);
-                        }
-                    }
-                });
+                        } catch(e) { }
+                    });
+
             } catch(e) {
-                console.error('Error iniciando Papa.parse:', e);
-                // Still render with static data
-                try { renderDashboard(); } catch(e2) { console.error('Error en fallback final:', e2); }
+                console.error('Error en el bloque principal de carga:', e);
             }
         }
 
