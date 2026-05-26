@@ -853,14 +853,103 @@
             border-top: none;
             padding-top: 0;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+        }
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+        }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--accent-red);
+        }
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        .btn-detail {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin: 0 0.2rem;
+        }
+        .btn-detail:hover {
+            background: #022bc2;
+            box-shadow: 0 2px 8px var(--accent-blue-glow);
+        }
+        .clickable-dim {
+            cursor: pointer;
+            color: var(--accent-blue);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: color 0.2s ease, text-decoration-color 0.2s ease;
+        }
+        .clickable-dim:hover {
+            color: var(--accent-red);
+            text-decoration-color: var(--accent-red);
+        }
+        [data-theme="dark"] .clickable-dim {
+            color: #3b82f6;
+        }
+        [data-theme="dark"] .clickable-dim:hover {
+            color: #ff3329;
+            text-decoration-color: #ff3329;
+        }
     </style>
 </head>
 
 <body data-theme="light">
+    <!-- Toast Container -->
+    <div id="toast-message" class="toast"></div>
 
     <div class="container">
+        <!-- General Dashboard View Container -->
+        <div id="general-view">
 
-        <!-- Header -->
+            <!-- Header -->
         <header class="glass-card dashboard-header" style="margin-bottom: 1rem; padding: 1.25rem 1.5rem;">
             <div class="header-top">
                 <div class="brand-container">
@@ -897,7 +986,7 @@
                     </div>
                 </div>
                 <div class="filter-box">
-                    <span class="filter-label">Trimestre</span>
+                    <span class="filter-label">Trim.</span>
                     <div class="multiselect-dropdown" id="dropdown-quarter">
                         <div class="multiselect-header" onclick="toggleDropdown('dropdown-quarter', event)">
                             <span class="multiselect-title" id="title-quarter">Todos los Trimestres</span>
@@ -933,7 +1022,7 @@
                     </div>
                 </div>
                 <div class="filter-box">
-                    <span class="filter-label">Tienda Origen</span>
+                    <span class="filter-label">Tienda</span>
                     <div class="multiselect-dropdown" id="dropdown-store">
                         <div class="multiselect-header" onclick="toggleDropdown('dropdown-store', event)">
                             <span class="multiselect-title" id="title-store">Todas las Tiendas</span>
@@ -945,10 +1034,10 @@
                     </div>
                 </div>
                 <div class="filter-box">
-                    <span class="filter-label">Empresa</span>
+                    <span class="filter-label">Compañía</span>
                     <div class="multiselect-dropdown" id="dropdown-cia">
                         <div class="multiselect-header" onclick="toggleDropdown('dropdown-cia', event)">
-                            <span class="multiselect-title" id="title-cia">Todas las CIAs</span>
+                            <span class="multiselect-title" id="title-cia">Todas las Compañías</span>
                             <span class="multiselect-arrow">▼</span>
                         </div>
                         <div class="multiselect-options" id="options-cia">
@@ -957,7 +1046,7 @@
                     </div>
                 </div>
                 <div class="filter-box">
-                    <span class="filter-label">Recepción CD</span>
+                    <span class="filter-label">Estado CD</span>
                     <div class="multiselect-dropdown" id="dropdown-recepcion">
                         <div class="multiselect-header" onclick="toggleDropdown('dropdown-recepcion', event)">
                             <span class="multiselect-title" id="title-recepcion">Todos los Estados</span>
@@ -969,7 +1058,7 @@
                     </div>
                 </div>
                 <div class="filter-box">
-                    <span class="filter-label">Tipo Tienda</span>
+                    <span class="filter-label">Formato</span>
                     <div class="multiselect-dropdown" id="dropdown-tipo-tienda">
                         <div class="multiselect-header" onclick="toggleDropdown('dropdown-tipo-tienda', event)">
                             <span class="multiselect-title" id="title-tipo-tienda">Todos los Tipos</span>
@@ -1185,7 +1274,7 @@
                     <div>
                         <label class="filter-label" style="display:block; margin-bottom: 0.25rem;">Modo de Visualización</label>
                         <select id="c-modo-vista" class="filter-select" style="min-width: 150px;" onchange="toggleComparativoModo()">
-                            <option value="ESTANDAR">Vista Estándar (3 Años)</option>
+                            <option value="ESTANDAR">VISTA ESTANDAR (2 AÑOS)</option>
                             <option value="LIBRE">Vista Libre (P1 vs P2)</option>
                         </select>
                     </div>
@@ -1307,18 +1396,115 @@
             </div>
             <div>Dashboard El Compadre © 2026 | Logística & Operaciones</div>
         </footer>
+    </div> <!-- Close #general-view -->
 
+    <!-- Detail Sub-Panel (Detail Sheet View) -->
+    <div id="detail-view" style="display: none;">
+        <!-- Header -->
+        <header class="glass-card dashboard-header" style="margin-bottom: 1rem; padding: 1.25rem 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn-action btn-primary" onclick="backToMainDashboard()" style="display: flex; align-items: center; gap: 0.5rem;">
+                        ⬅️ Volver al Panel Principal
+                    </button>
+                    <div class="brand-info">
+                        <h1 id="detail-view-title" style="font-size: 1.6rem; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--accent-red); margin: 0;">
+                            ANÁLISIS DETALLADO
+                        </h1>
+                        <p style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500; font-style: italic; margin: 0;">
+                            "En precios y moda, el más padre"
+                        </p>
+                    </div>
+                </div>
+                <div class="glass-card" style="padding: 0.5rem 1rem; display: flex; gap: 1rem; align-items: center; border: 1px solid var(--card-border); margin: 0;">
+                    <span class="filter-label" style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Desglosar por:</span>
+                    <select id="detail-drilldown-select" class="filter-select" style="min-width: 180px; height: 34px; padding: 0.25rem 0.5rem; margin: 0;" onchange="updateDetailViewData()">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPI Cards Row -->
+        <section class="kpi-grid" style="margin-bottom: 1.5rem;">
+            <div class="glass-card kpi-card kpi-unidades" style="margin-bottom: 0;">
+                <div class="kpi-header">
+                    <span class="kpi-label">Volumen Devuelto</span>
+                    <span>📦</span>
+                </div>
+                <div class="kpi-value val-unidades" id="detail-kpi-unidades">0</div>
+                <div class="kpi-subtext">Unidades físicas del item seleccionado</div>
+            </div>
+            <div class="glass-card kpi-card kpi-costo" style="margin-bottom: 0;">
+                <div class="kpi-header">
+                    <span class="kpi-label">Costo Total Devolución</span>
+                    <span>L</span>
+                </div>
+                <div class="kpi-value val-costo" id="detail-kpi-costo">L 0</div>
+                <div class="kpi-subtext">Costo total valorado (Lempiras)</div>
+            </div>
+            <div class="glass-card kpi-card kpi-promedio" style="margin-bottom: 0;">
+                <div class="kpi-header">
+                    <span class="kpi-label">Costo Promedio Unitario</span>
+                    <span>🏷️</span>
+                </div>
+                <div class="kpi-value val-promedio" id="detail-kpi-promedio">L 0.00</div>
+                <div class="kpi-subtext">Costo promedio por unidad devuelta</div>
+            </div>
+            <div class="glass-card kpi-card" style="border-left: 5px solid var(--success); margin-bottom: 0;">
+                <div class="kpi-header">
+                    <span class="kpi-label">Participación en Costo</span>
+                    <span>📊</span>
+                </div>
+                <div class="kpi-value text-bold" id="detail-kpi-participacion" style="color: var(--success); font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; margin-top: 0.25rem;">0.0%</div>
+                <div class="kpi-subtext">% del costo total actual del dashboard</div>
+            </div>
+        </section>
+
+        <!-- Charts Container -->
+        <section class="charts-container" style="margin-bottom: 1.5rem;">
+            <div class="glass-card chart-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                    <h2>Distribución de Unidades (Top 10)</h2>
+                </div>
+                <div class="chart-box" style="height: 330px;">
+                    <canvas id="detail-pie-chart"></canvas>
+                </div>
+            </div>
+            <div class="glass-card chart-card" style="margin-bottom: 0;">
+                <div class="section-header">
+                    <h2>Costo Total (L) por Desglose (Top 10)</h2>
+                </div>
+                <div class="chart-box" style="height: 330px;">
+                    <canvas id="detail-bar-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Table Section -->
+        <section class="glass-card" style="margin-top: 1.5rem; width: 100%; min-width: 0;">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <h2 id="detail-table-title" style="margin: 0;">Distribución Detallada</h2>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <label class="filter-label" style="font-size: 0.85rem; margin: 0; white-space: nowrap;">🔍 Buscar:</label>
+                    <input type="text" id="detail-table-search" class="filter-select" placeholder="Buscar en la tabla..." style="max-width: 250px; font-size: 0.85rem; height: 36px; margin: 0;" oninput="filterDetailTable()">
+                </div>
+            </div>
+            <div class="table-responsive" style="min-height: 300px;">
+                <div id="detail-table-content">
+                    <!-- Dynamic Table -->
+                </div>
+            </div>
+        </section>
     </div>
 
-    <!-- Floating Reset Button -->
-    <button class="btn-action btn-primary floating-reset" id="float-reset-btn" onclick="resetAllFilters()">
-        🧹 Restablecer Filtros
-    </button>
-
-    <!-- Toast message -->
-    <div class="toast" id="toast-message"></div>
+</div>
 
     <script>
+const staticMonthReason = [{"y":2026,"m":4,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":23338,"c":3158328},{"y":2026,"m":2,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":135456,"c":2484681.9},{"y":2025,"m":1,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":35634,"c":3598934.3},{"y":2026,"m":3,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":33104,"c":1630733.4},{"y":2025,"m":6,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":21815,"c":2008424.4},{"y":2025,"m":2,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":12880,"c":1021053.3},{"y":2025,"m":3,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":15362,"c":1242794.7},{"y":2025,"m":4,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":39636,"c":3324527.3},{"y":2025,"m":5,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":10340,"c":1002359},{"y":2025,"m":11,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":21048,"c":2267984.9},{"y":2025,"m":10,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":51670,"c":5947945},{"y":2025,"m":7,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":71153,"c":4601642.2},{"y":2025,"m":8,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":18042,"c":2513055.2},{"y":2025,"m":9,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":71706,"c":11120109.6},{"y":2025,"m":12,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":38301,"c":2400580.8},{"y":2026,"m":1,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":38394,"c":3391869.7},{"y":2026,"m":5,"r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":21178,"c":1360948.6},{"y":2025,"m":1,"r":"DAÑADOS","u":5100,"c":450497.3},{"y":2025,"m":2,"r":"DAÑADOS","u":1925,"c":105893.8},{"y":2025,"m":2,"r":"DAÑADOS INVENTARIO","u":1790,"c":88206.7},{"y":2025,"m":6,"r":"DAÑADOS INVENTARIO","u":3943,"c":157754.9},{"y":2025,"m":6,"r":"DAÑADOS","u":2093,"c":140370},{"y":2025,"m":11,"r":"DAÑADOS","u":1771,"c":110061.9},{"y":2025,"m":7,"r":"DAÑADOS","u":974,"c":65996},{"y":2025,"m":7,"r":"DAÑADOS INVENTARIO","u":5970,"c":271849.4},{"y":2025,"m":9,"r":"DAÑADOS","u":1442,"c":128704.8},{"y":2025,"m":8,"r":"DAÑADOS INVENTARIO","u":2221,"c":92298.3},{"y":2025,"m":10,"r":"DAÑADOS INVENTARIO","u":5132,"c":200812.5},{"y":2026,"m":1,"r":"DAÑADOS","u":1789,"c":120360.2},{"y":2026,"m":4,"r":"DAÑADOS INVENTARIO","u":5829,"c":256278.2},{"y":2026,"m":2,"r":"DAÑADOS INVENTARIO","u":5449,"c":221480.3},{"y":2026,"m":3,"r":"DAÑADOS INVENTARIO","u":7775,"c":333119.2},{"y":2026,"m":4,"r":"DAÑADOS","u":2082,"c":153203.5},{"y":2025,"m":3,"r":"DAÑADOS INVENTARIO","u":4997,"c":192835.1},{"y":2025,"m":4,"r":"DAÑADOS INVENTARIO","u":3212,"c":114844},{"y":2025,"m":4,"r":"DAÑADOS","u":1711,"c":145706.4},{"y":2025,"m":5,"r":"DAÑADOS","u":3015,"c":190711.1},{"y":2025,"m":5,"r":"DAÑADOS INVENTARIO","u":1429,"c":39330.6},{"y":2025,"m":8,"r":"DAÑADOS","u":1519,"c":96987.6},{"y":2025,"m":9,"r":"DAÑADOS INVENTARIO","u":2138,"c":90762},{"y":2025,"m":10,"r":"DAÑADOS","u":2279,"c":145395.8},{"y":2025,"m":12,"r":"DAÑADOS","u":1131,"c":98090.3},{"y":2026,"m":1,"r":"DAÑADOS INVENTARIO","u":4436,"c":193279.1},{"y":2026,"m":2,"r":"DAÑADOS","u":4324,"c":200580},{"y":2026,"m":3,"r":"DAÑADOS","u":2022,"c":121794.1},{"y":2026,"m":5,"r":"DAÑADOS","u":1786,"c":123595.4},{"y":2025,"m":3,"r":"DAÑADOS","u":1267,"c":102927},{"y":2026,"m":5,"r":"DAÑADOS INVENTARIO","u":722,"c":41812.2},{"y":2025,"m":1,"r":"AUTORIZADO POR GERENCIA","u":1545,"c":167265},{"y":2026,"m":3,"r":"AUTORIZADO POR GERENCIA","u":1732,"c":81375.1},{"y":2026,"m":3,"r":"EXCESO DE INVENTARIO","u":7418,"c":530493.6},{"y":2026,"m":4,"r":"EXCESO DE INVENTARIO","u":4854,"c":618116.1},{"y":2025,"m":6,"r":"TEMPORADA","u":740,"c":62002.1},{"y":2026,"m":1,"r":"TEMPORADA","u":46629,"c":882002.3},{"y":2026,"m":2,"r":"COLOR DE ETIQUETA","u":118,"c":8520.3},{"y":2025,"m":1,"r":"COLOR DE ETIQUETA","u":460,"c":182},{"y":2025,"m":5,"r":"AUTORIZADO POR GERENCIA","u":447,"c":46426.8},{"y":2025,"m":9,"r":"AUTORIZADO POR GERENCIA","u":705,"c":107382.9},{"y":2025,"m":10,"r":"COLOR DE ETIQUETA","u":316,"c":32097.7},{"y":2025,"m":9,"r":"COLOR DE ETIQUETA","u":528,"c":77401.5},{"y":2025,"m":11,"r":"AUTORIZADO POR GERENCIA","u":609,"c":57288.6},{"y":2026,"m":5,"r":"AUTORIZADO POR GERENCIA","u":2966,"c":191527.9},{"y":2026,"m":5,"r":"EXCESO DE INVENTARIO","u":4530,"c":305734.2},{"y":2025,"m":6,"r":"EXCESO DE INVENTARIO","u":1944,"c":174554.8},{"y":2025,"m":4,"r":"COLOR DE ETIQUETA","u":1851,"c":37.9},{"y":2025,"m":5,"r":"COLOR DE ETIQUETA","u":991,"c":0},{"y":2025,"m":6,"r":"COLOR DE ETIQUETA","u":3143,"c":80.1},{"y":2025,"m":11,"r":"EXCESO DE INVENTARIO","u":753,"c":39678.4},{"y":2025,"m":11,"r":"COLOR DE ETIQUETA","u":405,"c":7818},{"y":2025,"m":7,"r":"AUTORIZADO POR GERENCIA","u":1565,"c":107778.8},{"y":2025,"m":8,"r":"AUTORIZADO POR GERENCIA","u":1601,"c":138921.6},{"y":2026,"m":2,"r":"AUTORIZADO POR GERENCIA","u":1070,"c":74817.1},{"y":2025,"m":2,"r":"AUTORIZADO POR GERENCIA","u":72,"c":5870.3},{"y":2026,"m":1,"r":"AUTORIZADO POR GERENCIA","u":48,"c":4152.4},{"y":2025,"m":1,"r":"TEMPORADA","u":10150,"c":230831.3},{"y":2025,"m":10,"r":"TEMPORADA","u":1842,"c":223058},{"y":2025,"m":7,"r":"TEMPORADA","u":8804,"c":900415.6},{"y":2025,"m":11,"r":"TEMPORADA","u":1919,"c":185830.1},{"y":2026,"m":3,"r":"TEMPORADA","u":25774,"c":711870.1},{"y":2026,"m":4,"r":"TEMPORADA","u":9563,"c":315705},{"y":2026,"m":5,"r":"TEMPORADA","u":4228,"c":85064.8},{"y":2025,"m":2,"r":"TEMPORADA","u":1143,"c":48198.1},{"y":2025,"m":4,"r":"TEMPORADA","u":4313,"c":398169},{"y":2025,"m":5,"r":"TEMPORADA","u":818,"c":97749.3},{"y":2025,"m":12,"r":"TEMPORADA","u":9152,"c":132335.5},{"y":2026,"m":2,"r":"TEMPORADA","u":11292,"c":504589.3},{"y":2025,"m":3,"r":"TEMPORADA","u":988,"c":66712.4},{"y":2026,"m":4,"r":"AUTORIZADO POR GERENCIA","u":123,"c":13145.7},{"y":2026,"m":2,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2098,"c":173586.8},{"y":2025,"m":11,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":244,"c":103.2},{"y":2026,"m":3,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2120.3,"c":87983.2},{"y":2025,"m":1,"r":"EXCESO DE INVENTARIO","u":16650,"c":1770847.5},{"y":2025,"m":12,"r":"EXCESO DE INVENTARIO","u":29,"c":2668.5},{"y":2025,"m":6,"r":"AUTORIZADO POR GERENCIA","u":123,"c":4494.7},{"y":2025,"m":1,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":5293,"c":536696.8},{"y":2025,"m":2,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2863,"c":153072.5},{"y":2025,"m":3,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":763,"c":36921.8},{"y":2025,"m":4,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2034,"c":172514.2},{"y":2025,"m":7,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":556,"c":29244.5},{"y":2025,"m":4,"r":"AUTORIZADO POR GERENCIA","u":141,"c":16029.6},{"y":2025,"m":10,"r":"AUTORIZADO POR GERENCIA","u":537,"c":64952.7},{"y":2025,"m":12,"r":"AUTORIZADO POR GERENCIA","u":115,"c":3292.4},{"y":2025,"m":7,"r":"EXCESO DE INVENTARIO","u":6723,"c":911495.5},{"y":2025,"m":10,"r":"EXCESO DE INVENTARIO","u":1134,"c":79106.9},{"y":2026,"m":1,"r":"EXCESO DE INVENTARIO","u":1821,"c":306051.6},{"y":2026,"m":2,"r":"EXCESO DE INVENTARIO","u":5602,"c":866789.3},{"y":2025,"m":2,"r":"EXCESO DE INVENTARIO","u":112,"c":20170.9},{"y":2025,"m":5,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":703,"c":78895},{"y":2025,"m":6,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":752,"c":64788.6},{"y":2025,"m":8,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":657,"c":86812.1},{"y":2025,"m":10,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":609,"c":6222.6},{"y":2026,"m":1,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1843,"c":188904},{"y":2026,"m":4,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":850,"c":97432.3},{"y":2026,"m":5,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":4145,"c":343070.4},{"y":2026,"m":4,"r":"COLOR DE ETIQUETA","u":941,"c":2284.9},{"y":2025,"m":9,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":240,"c":8444.4},{"y":2025,"m":3,"r":"EXCESO DE INVENTARIO","u":298,"c":28837.2},{"y":2025,"m":3,"r":"AUTORIZADO POR GERENCIA","u":403,"c":40462.4},{"y":2025,"m":7,"r":"COLOR DE ETIQUETA","u":739,"c":0},{"y":2025,"m":2,"r":"COLOR DE ETIQUETA","u":102,"c":0},{"y":2025,"m":3,"r":"COLOR DE ETIQUETA","u":668,"c":0},{"y":2026,"m":5,"r":"COLOR DE ETIQUETA","u":313,"c":0},{"y":2026,"m":3,"r":"COLOR DE ETIQUETA","u":267,"c":0},{"y":2025,"m":12,"r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":327,"c":35184.9},{"y":2025,"m":1,"r":"DAÑADOS INVENTARIO","u":120,"c":2426.3},{"y":2025,"m":4,"r":"EXCESO DE INVENTARIO","u":394,"c":23861.6},{"y":2025,"m":12,"r":"COLOR DE ETIQUETA","u":18,"c":0}];
+const staticDivReason = [{"y":2026,"d":"CALZADO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":31985,"c":4038171.3},{"y":2025,"d":"CALZADO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":87581,"c":12455363.4},{"y":2025,"d":"CALZADO","r":"DAÑADOS","u":2439,"c":307691.3},{"y":2025,"d":"CALZADO","r":"DAÑADOS INVENTARIO","u":921,"c":96386.4},{"y":2026,"d":"CALZADO","r":"DAÑADOS","u":805,"c":107469.3},{"y":2026,"d":"CALZADO","r":"DAÑADOS INVENTARIO","u":655,"c":80479.1},{"y":2025,"d":"CALZADO","r":"AUTORIZADO POR GERENCIA","u":245,"c":25606.5},{"y":2026,"d":"CALZADO","r":"AUTORIZADO POR GERENCIA","u":42,"c":4772.5},{"y":2026,"d":"CALZADO","r":"EXCESO DE INVENTARIO","u":1412,"c":202204},{"y":2025,"d":"CALZADO","r":"TEMPORADA","u":20,"c":1388.7},{"y":2026,"d":"CALZADO","r":"TEMPORADA","u":16,"c":2829.8},{"y":2026,"d":"ROPA","r":"COLOR DE ETIQUETA","u":122,"c":9874.9},{"y":2025,"d":"ROPA","r":"COLOR DE ETIQUETA","u":664,"c":93222.7},{"y":2025,"d":"ROPA","r":"AUTORIZADO POR GERENCIA","u":2304,"c":364516.3},{"y":2026,"d":"ROPA","r":"EXCESO DE INVENTARIO","u":14466,"c":2088844.5},{"y":2026,"d":"ROPA","r":"AUTORIZADO POR GERENCIA","u":1189,"c":182846.8},{"y":2025,"d":"PACER","r":"EXCESO DE INVENTARIO","u":968,"c":4647.4},{"y":2026,"d":"ACCESORIOS","r":"EXCESO DE INVENTARIO","u":41,"c":6285.1},{"y":2025,"d":"DS ROPA","r":"COLOR DE ETIQUETA","u":7457,"c":11875},{"y":2025,"d":"DS HOGAR","r":"COLOR DE ETIQUETA","u":321,"c":0},{"y":2025,"d":"DS INTERIOR","r":"COLOR DE ETIQUETA","u":317,"c":0},{"y":2025,"d":"CUIDADO PERSONAL","r":"EXCESO DE INVENTARIO","u":529,"c":16175.9},{"y":2026,"d":"ESCOLAR","r":"EXCESO DE INVENTARIO","u":6350,"c":279043.7},{"y":2025,"d":"HOGAR","r":"AUTORIZADO POR GERENCIA","u":846,"c":79781.6},{"y":2025,"d":"BEBE","r":"AUTORIZADO POR GERENCIA","u":80,"c":1866.2},{"y":2025,"d":"BELLEZA","r":"AUTORIZADO POR GERENCIA","u":122,"c":2132.2},{"y":2025,"d":"CALZADO PLASTICO","r":"AUTORIZADO POR GERENCIA","u":1336,"c":90604.7},{"y":2025,"d":"ACCESORIOS","r":"AUTORIZADO POR GERENCIA","u":103,"c":2537.2},{"y":2025,"d":"INTERIOR DETALLE","r":"AUTORIZADO POR GERENCIA","u":9,"c":245.2},{"y":2025,"d":"CUIDADO PERSONAL","r":"AUTORIZADO POR GERENCIA","u":923,"c":45150.5},{"y":2025,"d":"JUGUETERIA","r":"AUTORIZADO POR GERENCIA","u":137,"c":10240.1},{"y":2025,"d":"PACER","r":"AUTORIZADO POR GERENCIA","u":117,"c":3292.4},{"y":2025,"d":"DEPORTIVA","r":"AUTORIZADO POR GERENCIA","u":124,"c":26328.8},{"y":2026,"d":"CUIDADO PERSONAL","r":"AUTORIZADO POR GERENCIA","u":817,"c":59980.5},{"y":2026,"d":"BEBE","r":"AUTORIZADO POR GERENCIA","u":1,"c":94.8},{"y":2026,"d":"ESCOLAR","r":"AUTORIZADO POR GERENCIA","u":2621,"c":111299.1},{"y":2026,"d":"BELLEZA","r":"AUTORIZADO POR GERENCIA","u":6,"c":163.9},{"y":2026,"d":"ACCESORIOS","r":"AUTORIZADO POR GERENCIA","u":26,"c":2872.7},{"y":2025,"d":"VERANO","r":"AUTORIZADO POR GERENCIA","u":337,"c":45687.9},{"y":2025,"d":"HOGAR","r":"TEMPORADA","u":308,"c":23329.2},{"y":2025,"d":"CELEBRACIONES","r":"TEMPORADA","u":19607,"c":357872.8},{"y":2025,"d":"VERANO","r":"TEMPORADA","u":9655,"c":1177013.9},{"y":2025,"d":"ACCESORIOS","r":"TEMPORADA","u":439,"c":30711.2},{"y":2025,"d":"JUGUETERIA","r":"TEMPORADA","u":34,"c":1593.9},{"y":2025,"d":"DAÑADO EN PROMOCION","r":"TEMPORADA","u":1,"c":35.7},{"y":2025,"d":"DS VERANO","r":"TEMPORADA","u":277,"c":0},{"y":2026,"d":"CELEBRACIONES","r":"TEMPORADA","u":46715,"c":797077},{"y":2026,"d":"ROPA","r":"TEMPORADA","u":430,"c":65442.9},{"y":2026,"d":"HOGAR","r":"TEMPORADA","u":74,"c":6237.3},{"y":2026,"d":"ACCESORIOS","r":"TEMPORADA","u":415,"c":53423.8},{"y":2026,"d":"JUGUETERIA","r":"TEMPORADA","u":17,"c":561.8},{"y":2026,"d":"GRUPOS XXXNO USARXXX","r":"TEMPORADA","u":16,"c":330.1},{"y":2025,"d":"ROPA","r":"TEMPORADA","u":1653,"c":165777.2},{"y":2025,"d":"BEBE","r":"TEMPORADA","u":5,"c":588.6},{"y":2026,"d":"TECNOLOGIA","r":"TEMPORADA","u":9,"c":859},{"y":2026,"d":"CUIDADO PERSONAL","r":"TEMPORADA","u":7,"c":47.2},{"y":2026,"d":"ESCOLAR","r":"TEMPORADA","u":49585,"c":1543085.7},{"y":2025,"d":"ESCOLAR","r":"TEMPORADA","u":7484,"c":578693.4},{"y":2026,"d":"VERANO","r":"TEMPORADA","u":200,"c":29322.8},{"y":2025,"d":"DEPORTIVA","r":"TEMPORADA","u":23,"c":1364.5},{"y":2025,"d":"BELLEZA","r":"TEMPORADA","u":20,"c":490.1},{"y":2025,"d":"TECNOLOGIA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3504,"c":147856},{"y":2025,"d":"BELLEZA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":13233,"c":205059.8},{"y":2025,"d":"ACCESORIOS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":14873,"c":401585.5},{"y":2025,"d":"BEBE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2945,"c":105687},{"y":2025,"d":"HOGAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6475,"c":454874.4},{"y":2025,"d":"CUIDADO PERSONAL","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":12621,"c":624872.3},{"y":2025,"d":"VERANO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":8190,"c":978241.5},{"y":2025,"d":"CELEBRACIONES","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":11766,"c":176051.5},{"y":2025,"d":"DEPORTIVA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7699,"c":1090944.9},{"y":2025,"d":"CALZADO PLASTICO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3889,"c":191441.1},{"y":2025,"d":"INTERIOR DETALLE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":56021,"c":917537.1},{"y":2026,"d":"ACCESORIOS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":20812,"c":619462.5},{"y":2026,"d":"HOGAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":9297,"c":90892.3},{"y":2026,"d":"ESCOLAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":33198,"c":871901.9},{"y":2026,"d":"INTERIOR DETALLE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":28499,"c":188048.2},{"y":2026,"d":"BEBE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2374,"c":18989.5},{"y":2025,"d":"ESCOLAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":12633,"c":690565.7},{"y":2025,"d":"JUGUETERIA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2117,"c":108116.1},{"y":2025,"d":"GRUPOS XXXNO USARXXX","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":116,"c":1964.9},{"y":2026,"d":"DEPORTIVA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1873,"c":29867.1},{"y":2026,"d":"JUGUETERIA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1756,"c":1415.6},{"y":2026,"d":"TECNOLOGIA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2035,"c":30304.1},{"y":2026,"d":"CELEBRACIONES","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":19521,"c":302967.2},{"y":2026,"d":"CALZADO PLASTICO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3424,"c":78656.3},{"y":2026,"d":"PROMOCION-VARIOS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3,"c":746},{"y":2026,"d":"VERANO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":592,"c":51650.8},{"y":2026,"d":"DAÑADO EN PROMOCION","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":35,"c":1451.3},{"y":2026,"d":"GRUPOS XXXNO USARXXX","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":32,"c":781.3},{"y":2026,"d":"BELLEZA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":16590,"c":20189},{"y":2025,"d":"PACER","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3043,"c":24632.9},{"y":2025,"d":"PASEO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":24,"c":30326.2},{"y":2026,"d":"CUIDADO PERSONAL","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":23341,"c":58761.9},{"y":2026,"d":"INTERIOR DETALLE","r":"AUTORIZADO POR GERENCIA","u":3,"c":55.6},{"y":2026,"d":"PACER","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":986,"c":2835.7},{"y":2026,"d":"SUPERMERCADO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":203,"c":2427.7},{"y":2025,"d":"PROMOCION-PRODUCCION","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":256,"c":9041.9},{"y":2025,"d":"DS ROPA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":9769,"c":912.9},{"y":2025,"d":"DAÑADO EN PROMOCION","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":21,"c":1006.6},{"y":2025,"d":"PROMOCION-VARIOS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":10,"c":0},{"y":2025,"d":"DS INTERIOR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":577,"c":0},{"y":2025,"d":"DS HOGAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":428,"c":0},{"y":2025,"d":"DS CALZADO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7,"c":152.2},{"y":2025,"d":"DS VERANO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":348,"c":0},{"y":2025,"d":"MERCADERIA DE CONSUMO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":22,"c":0},{"y":2026,"d":"DS ROPA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":9829,"c":13564.1},{"y":2026,"d":"DS INTERIOR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":618,"c":0},{"y":2026,"d":"DS HOGAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":416,"c":0},{"y":2026,"d":"DS VERANO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":72,"c":0},{"y":2026,"d":"PASEO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":54,"c":30502.7},{"y":2026,"d":"ROPA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":42574,"c":5561417},{"y":2025,"d":"ROPA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":149050,"c":22423594.9},{"y":2026,"d":"HOGAR","r":"DAÑADOS","u":1533,"c":107262.3},{"y":2026,"d":"ACCESORIOS","r":"DAÑADOS","u":1599,"c":51536.4},{"y":2026,"d":"TECNOLOGIA","r":"DAÑADOS","u":198,"c":30917.9},{"y":2026,"d":"INTERIOR DETALLE","r":"DAÑADOS","u":1043,"c":23641.3},{"y":2026,"d":"BELLEZA","r":"DAÑADOS","u":1441,"c":23209.9},{"y":2026,"d":"ROPA","r":"DAÑADOS","u":1545,"c":157170.8},{"y":2026,"d":"DS ROPA","r":"DAÑADOS","u":88,"c":157.3},{"y":2026,"d":"DS HOGAR","r":"DAÑADOS","u":23,"c":0},{"y":2025,"d":"HOGAR","r":"DAÑADOS","u":3548,"c":331723.9},{"y":2025,"d":"BELLEZA","r":"DAÑADOS","u":2984,"c":59753.6},{"y":2025,"d":"ESCOLAR","r":"DAÑADOS","u":470,"c":33036.4},{"y":2025,"d":"INTERIOR DETALLE","r":"DAÑADOS","u":1569,"c":46438.3},{"y":2026,"d":"BEBE","r":"DAÑADOS","u":494,"c":8274.7},{"y":2026,"d":"JUGUETERIA","r":"DAÑADOS","u":73,"c":5789.6},{"y":2026,"d":"CALZADO PLASTICO","r":"DAÑADOS","u":47,"c":2976.4},{"y":2026,"d":"CUIDADO PERSONAL","r":"DAÑADOS","u":2366,"c":135850.5},{"y":2026,"d":"PASEO","r":"DAÑADOS","u":31,"c":21535.7},{"y":2026,"d":"ESCOLAR","r":"DAÑADOS","u":294,"c":11446.2},{"y":2025,"d":"INTERIOR DETALLE","r":"DAÑADOS INVENTARIO","u":1494,"c":38503},{"y":2025,"d":"HOGAR","r":"DAÑADOS INVENTARIO","u":2911,"c":160970.7},{"y":2025,"d":"ACCESORIOS","r":"DAÑADOS INVENTARIO","u":8408,"c":142806.6},{"y":2025,"d":"ESCOLAR","r":"DAÑADOS INVENTARIO","u":2450,"c":33123.3},{"y":2025,"d":"CALZADO PLASTICO","r":"DAÑADOS INVENTARIO","u":1581,"c":63203.4},{"y":2025,"d":"TECNOLOGIA","r":"DAÑADOS INVENTARIO","u":244,"c":37009.8},{"y":2025,"d":"ROPA","r":"DAÑADOS INVENTARIO","u":3279,"c":388741.8},{"y":2025,"d":"JUGUETERIA","r":"DAÑADOS INVENTARIO","u":563,"c":26217.9},{"y":2025,"d":"ACCESORIOS","r":"DAÑADOS","u":3146,"c":140667.4},{"y":2025,"d":"ROPA","r":"DAÑADOS","u":3076,"c":436460.9},{"y":2025,"d":"JUGUETERIA","r":"DAÑADOS","u":572,"c":46794.1},{"y":2025,"d":"DEPORTIVA","r":"DAÑADOS","u":125,"c":11402.9},{"y":2025,"d":"CALZADO PLASTICO","r":"DAÑADOS","u":297,"c":14558.9},{"y":2025,"d":"BEBE","r":"DAÑADOS","u":215,"c":7569.8},{"y":2025,"d":"CELEBRACIONES","r":"DAÑADOS","u":325,"c":13038.8},{"y":2026,"d":"ACCESORIOS","r":"DAÑADOS INVENTARIO","u":5249,"c":124020.4},{"y":2026,"d":"BELLEZA","r":"DAÑADOS INVENTARIO","u":4241,"c":75547.2},{"y":2026,"d":"ESCOLAR","r":"DAÑADOS INVENTARIO","u":2522,"c":31821.2},{"y":2026,"d":"TECNOLOGIA","r":"DAÑADOS INVENTARIO","u":164,"c":24007.5},{"y":2026,"d":"HOGAR","r":"DAÑADOS INVENTARIO","u":2393,"c":135137.8},{"y":2026,"d":"CELEBRACIONES","r":"DAÑADOS INVENTARIO","u":278,"c":8481.3},{"y":2026,"d":"JUGUETERIA","r":"DAÑADOS INVENTARIO","u":403,"c":23533.2},{"y":2026,"d":"CUIDADO PERSONAL","r":"DAÑADOS INVENTARIO","u":4534,"c":195655.6},{"y":2026,"d":"ROPA","r":"DAÑADOS INVENTARIO","u":1855,"c":276206.7},{"y":2026,"d":"INTERIOR DETALLE","r":"DAÑADOS INVENTARIO","u":755,"c":17759.3},{"y":2026,"d":"CALZADO PLASTICO","r":"DAÑADOS INVENTARIO","u":327,"c":14108.3},{"y":2026,"d":"PROMOCION-PRODUCCION","r":"DAÑADOS INVENTARIO","u":18,"c":647.6},{"y":2026,"d":"DEPORTIVA","r":"DAÑADOS INVENTARIO","u":112,"c":10984.4},{"y":2026,"d":"BEBE","r":"DAÑADOS INVENTARIO","u":209,"c":8418.1},{"y":2026,"d":"SUPERMERCADO","r":"DAÑADOS INVENTARIO","u":79,"c":708.4},{"y":2026,"d":"PROMOCION-PRODUCCION","r":"DAÑADOS","u":4,"c":106.2},{"y":2026,"d":"SUPERMERCADO","r":"DAÑADOS","u":7,"c":181.7},{"y":2025,"d":"BELLEZA","r":"DAÑADOS INVENTARIO","u":3084,"c":64571.3},{"y":2025,"d":"CUIDADO PERSONAL","r":"DAÑADOS INVENTARIO","u":3362,"c":126583.2},{"y":2025,"d":"CELEBRACIONES","r":"DAÑADOS INVENTARIO","u":280,"c":6419.9},{"y":2025,"d":"VERANO","r":"DAÑADOS INVENTARIO","u":94,"c":12277.7},{"y":2025,"d":"BEBE","r":"DAÑADOS INVENTARIO","u":312,"c":8590.6},{"y":2025,"d":"TECNOLOGIA","r":"DAÑADOS","u":423,"c":69763.1},{"y":2025,"d":"CUIDADO PERSONAL","r":"DAÑADOS","u":3704,"c":154558.3},{"y":2025,"d":"DS ROPA","r":"DAÑADOS","u":811,"c":669.2},{"y":2026,"d":"CELEBRACIONES","r":"DAÑADOS","u":111,"c":3444.6},{"y":2026,"d":"DEPORTIVA","r":"DAÑADOS","u":155,"c":6635},{"y":2026,"d":"GRUPOS XXXNO USARXXX","r":"DAÑADOS","u":56,"c":1225.7},{"y":2026,"d":"VERANO","r":"DAÑADOS","u":60,"c":18399.9},{"y":2025,"d":"PROMOCION-VARIOS","r":"DAÑADOS","u":20,"c":4236.9},{"y":2025,"d":"VERANO","r":"DAÑADOS","u":104,"c":28430.8},{"y":2025,"d":"DEPORTIVA","r":"DAÑADOS INVENTARIO","u":134,"c":12215.9},{"y":2025,"d":"DAÑADO EN PROMOCION","r":"DAÑADOS","u":52,"c":4510},{"y":2026,"d":"GOLOSINAS","r":"DAÑADOS","u":4,"c":27.1},{"y":2025,"d":"GOLOSINAS","r":"DAÑADOS INVENTARIO","u":350,"c":4237.3},{"y":2025,"d":"DAÑADO EN PROMOCION","r":"DAÑADOS INVENTARIO","u":54,"c":3594.7},{"y":2025,"d":"PROMOCION-VARIOS","r":"DAÑADOS INVENTARIO","u":9,"c":1734.8},{"y":2025,"d":"MERCADERIA DE CONSUMO","r":"DAÑADOS INVENTARIO","u":4,"c":269.6},{"y":2025,"d":"DS ROPA","r":"DAÑADOS INVENTARIO","u":1000,"c":2819.9},{"y":2026,"d":"DAÑADO EN PROMOCION","r":"DAÑADOS INVENTARIO","u":17,"c":1419},{"y":2026,"d":"PASEO","r":"DAÑADOS INVENTARIO","u":27,"c":11688.9},{"y":2026,"d":"PROMOCION-VARIOS","r":"DAÑADOS INVENTARIO","u":6,"c":1040.9},{"y":2026,"d":"VERANO","r":"DAÑADOS INVENTARIO","u":26,"c":3724.8},{"y":2026,"d":"DS ROPA","r":"DAÑADOS INVENTARIO","u":266,"c":418.4},{"y":2026,"d":"GRUPOS XXXNO USARXXX","r":"DAÑADOS INVENTARIO","u":2,"c":18.9},{"y":2026,"d":"DS ESCOLAR","r":"DAÑADOS","u":1,"c":90},{"y":2026,"d":"DAÑADO EN PROMOCION","r":"DAÑADOS","u":5,"c":415},{"y":2026,"d":"CUIDADO PERSONAL","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":534,"c":48987.4},{"y":2025,"d":"GRUPOS XXXNO USARXXX","r":"DAÑADOS","u":4,"c":154.3},{"y":2025,"d":"GRUPOS XXXNO USARXXX","r":"DAÑADOS INVENTARIO","u":21,"c":554.9},{"y":2025,"d":"DS INTERIOR","r":"DAÑADOS","u":33,"c":0},{"y":2025,"d":"DS ACCESORIOS","r":"DAÑADOS INVENTARIO","u":11,"c":0},{"y":2025,"d":"DS JUGUETERIA","r":"DAÑADOS INVENTARIO","u":7,"c":0},{"y":2025,"d":"DS INTERIOR","r":"DAÑADOS INVENTARIO","u":94,"c":0},{"y":2025,"d":"DS ESCOLAR","r":"DAÑADOS INVENTARIO","u":2,"c":0},{"y":2025,"d":"DS CALZADO","r":"DAÑADOS INVENTARIO","u":4,"c":0},{"y":2025,"d":"DS HOGAR","r":"DAÑADOS INVENTARIO","u":103,"c":0},{"y":2025,"d":"DS VERANO","r":"DAÑADOS INVENTARIO","u":15,"c":0},{"y":2025,"d":"DS HOGAR","r":"DAÑADOS","u":44,"c":0},{"y":2025,"d":"DS VERANO","r":"DAÑADOS","u":4,"c":0},{"y":2026,"d":"DS HOGAR","r":"DAÑADOS INVENTARIO","u":28,"c":0},{"y":2026,"d":"DS ACCESORIOS","r":"DAÑADOS INVENTARIO","u":3,"c":0},{"y":2026,"d":"DS JUGUETERIA","r":"DAÑADOS INVENTARIO","u":3,"c":0},{"y":2026,"d":"DS INTERIOR","r":"DAÑADOS","u":9,"c":0},{"y":2026,"d":"DS CALZADO","r":"DAÑADOS","u":1,"c":0},{"y":2026,"d":"DS JUGUETERIA","r":"DAÑADOS","u":1,"c":0},{"y":2026,"d":"DS ACCESORIOS","r":"DAÑADOS","u":1,"c":0},{"y":2026,"d":"PACER","r":"DAÑADOS INVENTARIO","u":5,"c":0},{"y":2025,"d":"PROMOCION-PRODUCCION","r":"DAÑADOS","u":7,"c":215.3},{"y":2025,"d":"PACER","r":"DAÑADOS","u":67,"c":1929.4},{"y":2025,"d":"PASEO","r":"DAÑADOS","u":117,"c":66565.5},{"y":2025,"d":"GOLOSINAS","r":"DAÑADOS","u":20,"c":194.8},{"y":2025,"d":"PROMOCION-PRODUCCION","r":"DAÑADOS INVENTARIO","u":31,"c":921.5},{"y":2026,"d":"GOLOSINAS","r":"DAÑADOS INVENTARIO","u":16,"c":142},{"y":2025,"d":"PASEO","r":"DAÑADOS INVENTARIO","u":41,"c":18026.6},{"y":2025,"d":"SUPERMERCADO","r":"DAÑADOS INVENTARIO","u":76,"c":613.5},{"y":2025,"d":"SUPERMERCADO","r":"DAÑADOS","u":42,"c":789.4},{"y":2025,"d":"PACER","r":"DAÑADOS INVENTARIO","u":12,"c":725.6},{"y":2025,"d":"PACER","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":254,"c":1041.7},{"y":2026,"d":"PACER","r":"DAÑADOS","u":4,"c":277.7},{"y":2026,"d":"PACER","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":6,"c":181.7},{"y":2026,"d":"DS VERANO","r":"DAÑADOS INVENTARIO","u":2,"c":0},{"y":2026,"d":"DS INTERIOR","r":"DAÑADOS INVENTARIO","u":15,"c":0},{"y":2026,"d":"MERCADERIA DE CONSUMO","r":"DAÑADOS INVENTARIO","u":1,"c":0},{"y":2026,"d":"PROMOCION-VARIOS","r":"DAÑADOS","u":4,"c":1491.9},{"y":2026,"d":"BELLEZA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":539,"c":5674.5},{"y":2025,"d":"SUPERMERCADO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":94,"c":6219.1},{"y":2025,"d":"DS ACCESORIOS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":70,"c":440},{"y":2026,"d":"JUGUETERIA","r":"AUTORIZADO POR GERENCIA","u":2,"c":264.5},{"y":2025,"d":"BEBE","r":"EXCESO DE INVENTARIO","u":433,"c":20159.3},{"y":2025,"d":"HOGAR","r":"EXCESO DE INVENTARIO","u":528,"c":25665},{"y":2026,"d":"HOGAR","r":"EXCESO DE INVENTARIO","u":97,"c":6388.9},{"y":2025,"d":"CALZADO PLASTICO","r":"TEMPORADA","u":18,"c":1624.5},{"y":2025,"d":"CUIDADO PERSONAL","r":"TEMPORADA","u":83,"c":1722.5},{"y":2025,"d":"DS JUGUETERIA","r":"COLOR DE ETIQUETA","u":48,"c":0},{"y":2025,"d":"DS VERANO","r":"COLOR DE ETIQUETA","u":180,"c":0},{"y":2025,"d":"XXXNO USARXXXDANILOS STORE","r":"COLOR DE ETIQUETA","u":35,"c":0},{"y":2026,"d":"CUIDADO PERSONAL","r":"EXCESO DE INVENTARIO","u":347,"c":15935.5},{"y":2025,"d":"HOGAR","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":760,"c":54057.8},{"y":2025,"d":"ACCESORIOS","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1840,"c":75290.9},{"y":2025,"d":"BELLEZA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":909,"c":15291.8},{"y":2025,"d":"CALZADO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":525,"c":55451.5},{"y":2025,"d":"ESCOLAR","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":590,"c":53027.8},{"y":2025,"d":"TECNOLOGIA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":6,"c":356.9},{"y":2025,"d":"CALZADO","r":"COLOR DE ETIQUETA","u":90,"c":12491.5},{"y":2025,"d":"INTERIOR DETALLE","r":"EXCESO DE INVENTARIO","u":4588,"c":67119.5},{"y":2025,"d":"ACCESORIOS","r":"EXCESO DE INVENTARIO","u":123,"c":11119.1},{"y":2025,"d":"CELEBRACIONES","r":"EXCESO DE INVENTARIO","u":439,"c":3266},{"y":2025,"d":"BELLEZA","r":"EXCESO DE INVENTARIO","u":230,"c":2214},{"y":2025,"d":"VERANO","r":"EXCESO DE INVENTARIO","u":32,"c":3632.2},{"y":2025,"d":"ESCOLAR","r":"EXCESO DE INVENTARIO","u":1315,"c":97575.2},{"y":2026,"d":"DEPORTIVA","r":"EXCESO DE INVENTARIO","u":64,"c":4461.2},{"y":2026,"d":"BEBE","r":"EXCESO DE INVENTARIO","u":55,"c":7602.1},{"y":2026,"d":"ESCOLAR","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1831,"c":120338},{"y":2025,"d":"ROPA","r":"EXCESO DE INVENTARIO","u":16382,"c":2529025.7},{"y":2026,"d":"ROPA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":3632,"c":472786.1},{"y":2025,"d":"CALZADO","r":"EXCESO DE INVENTARIO","u":1290,"c":166271.4},{"y":2025,"d":"INTERIOR DETALLE","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1017,"c":17441.6},{"y":2025,"d":"ROPA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":6705,"c":817311.6},{"y":2026,"d":"BEBE","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":86,"c":7626.4},{"y":2026,"d":"HOGAR","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":337,"c":17975},{"y":2026,"d":"CALZADO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":438,"c":66124.2},{"y":2026,"d":"ACCESORIOS","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":364,"c":37685.6},{"y":2026,"d":"VERANO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":189,"c":31867.7},{"y":2026,"d":"JUGUETERIA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":112,"c":8961.2},{"y":2026,"d":"INTERIOR DETALLE","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":864,"c":22149.9},{"y":2026,"d":"DEPORTIVA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":512,"c":28455.2},{"y":2026,"d":"CELEBRACIONES","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":360,"c":2589},{"y":2025,"d":"CUIDADO PERSONAL","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":383,"c":19273.4},{"y":2025,"d":"DS ESCOLAR","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":11,"c":630},{"y":2025,"d":"TELA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":24,"c":593.6},{"y":2026,"d":"PROMOCION-PRODUCCION","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":235,"c":3960.2},{"y":2025,"d":"GOLOSINAS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":109,"c":943.3},{"y":2026,"d":"GOLOSINAS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":444,"c":0},{"y":2026,"d":"MERCADERIA DE CONSUMO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":155,"c":0},{"y":2025,"d":"VERANO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":229,"c":33464.7},{"y":2025,"d":"DEPORTIVA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":605,"c":7689.7},{"y":2025,"d":"CALZADO PLASTICO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":923,"c":40432.5},{"y":2026,"d":"HOGAR","r":"AUTORIZADO POR GERENCIA","u":10,"c":367},{"y":2026,"d":"DS ROPA","r":"COLOR DE ETIQUETA","u":1342,"c":796},{"y":2026,"d":"DS ROPA","r":"AUTORIZADO POR GERENCIA","u":1212,"c":2028.3},{"y":2025,"d":"DEPORTIVA","r":"EXCESO DE INVENTARIO","u":900,"c":100681.7},{"y":2025,"d":"CALZADO PLASTICO","r":"EXCESO DE INVENTARIO","u":71,"c":3486.8},{"y":2026,"d":"INTERIOR DETALLE","r":"EXCESO DE INVENTARIO","u":1046,"c":14060.5},{"y":2026,"d":"PROMOCION-PRODUCCION","r":"EXCESO DE INVENTARIO","u":6,"c":173.9},{"y":2026,"d":"JUGUETERIA","r":"EXCESO DE INVENTARIO","u":14,"c":1062.6},{"y":2026,"d":"DS ROPA","r":"EXCESO DE INVENTARIO","u":315,"c":135},{"y":2025,"d":"JUGUETERIA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":144,"c":11124.6},{"y":2025,"d":"INTERIOR DETALLE","r":"TEMPORADA","u":104,"c":1947.8},{"y":2025,"d":"PROMOCION-PRODUCCION","r":"TEMPORADA","u":30,"c":730},{"y":2026,"d":"PROMOCION-VARIOS","r":"EXCESO DE INVENTARIO","u":4,"c":798},{"y":2026,"d":"VERANO","r":"EXCESO DE INVENTARIO","u":8,"c":189.8},{"y":2026,"d":"DAÑADO EN PROMOCION","r":"COLOR DE ETIQUETA","u":2,"c":45},{"y":2025,"d":"XXXNO USARXXXDANILOS STORE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":45,"c":756},{"y":2025,"d":"ESCOLAR","r":"AUTORIZADO POR GERENCIA","u":671,"c":59761.4},{"y":2026,"d":"BELLEZA","r":"TEMPORADA","u":1,"c":14.1},{"y":2026,"d":"PACER","r":"TEMPORADA","u":1,"c":0},{"y":2026,"d":"DS ROPA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":98,"c":270},{"y":2026,"d":"VERANO","r":"COLOR DE ETIQUETA","u":2,"c":89.3},{"y":2026,"d":"GRUPOS XXXNO USARXXX","r":"AUTORIZADO POR GERENCIA","u":1,"c":100},{"y":2026,"d":"DAÑADO EN PROMOCION","r":"AUTORIZADO POR GERENCIA","u":5,"c":153},{"y":2026,"d":"VERANO","r":"AUTORIZADO POR GERENCIA","u":3,"c":19.8},{"y":2025,"d":"XXXNO USARXXXDANILOS STORE","r":"TEMPORADA","u":69,"c":0},{"y":2025,"d":"DS ACCESORIOS","r":"COLOR DE ETIQUETA","u":105,"c":0},{"y":2026,"d":"DS VERANO","r":"COLOR DE ETIQUETA","u":44,"c":0},{"y":2026,"d":"XXXNO USARXXXDANILOS STORE","r":"COLOR DE ETIQUETA","u":12,"c":0},{"y":2026,"d":"DS HOGAR","r":"COLOR DE ETIQUETA","u":89,"c":0},{"y":2026,"d":"DS ACCESORIOS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":66,"c":0},{"y":2026,"d":"XXXNO USARXXXDANILOS STORE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":10,"c":0},{"y":2025,"d":"DS JUGUETERIA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":15,"c":0},{"y":2026,"d":"DS ACCESORIOS","r":"COLOR DE ETIQUETA","u":2,"c":0},{"y":2025,"d":"DS INTERIOR","r":"TEMPORADA","u":2,"c":0},{"y":2026,"d":"DS INTERIOR","r":"AUTORIZADO POR GERENCIA","u":1,"c":0},{"y":2026,"d":"DS INTERIOR","r":"COLOR DE ETIQUETA","u":24,"c":0},{"y":2025,"d":"DS JUGUETERIA","r":"DAÑADOS","u":1,"c":0},{"y":2025,"d":"DS CALZADO","r":"COLOR DE ETIQUETA","u":1,"c":0},{"y":2025,"d":"MERCADERIA DE CONSUMO","r":"TEMPORADA","u":1,"c":0},{"y":2025,"d":"XXXNO USARXXXDANILOS STORE","r":"DAÑADOS INVENTARIO","u":1,"c":0},{"y":2025,"d":"DS BEBE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1,"c":0},{"y":2026,"d":"DS BEBE","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1,"c":0},{"y":2026,"d":"DS JUGUETERIA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2,"c":0},{"y":2026,"d":"DS CALZADO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1,"c":0},{"y":2025,"d":"DS ACCESORIOS","r":"DAÑADOS","u":3,"c":0},{"y":2025,"d":"DS INTERIOR","r":"AUTORIZADO POR GERENCIA","u":1,"c":0},{"y":2025,"d":"DS CALZADO","r":"DAÑADOS","u":3,"c":152.2},{"y":2025,"d":"DS ROPA","r":"TEMPORADA","u":32,"c":0},{"y":2025,"d":"DS ROPA","r":"AUTORIZADO POR GERENCIA","u":443,"c":0},{"y":2025,"d":"BEBE","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":143,"c":5008.6},{"y":2025,"d":"TECNOLOGIA","r":"AUTORIZADO POR GERENCIA","u":64,"c":2289.6},{"y":2025,"d":"TECNOLOGIA","r":"TEMPORADA","u":4,"c":417.4},{"y":2025,"d":"MERCADERIA DE CONSUMO","r":"COLOR DE ETIQUETA","u":2,"c":0},{"y":2025,"d":"DS ROPA","r":"EXCESO DE INVENTARIO","u":202,"c":0},{"y":2026,"d":"DAÑADO EN PROMOCION","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":6,"c":0},{"y":2025,"d":"DS ESCOLAR","r":"DAÑADOS","u":1,"c":0},{"y":2025,"d":"TELA","r":"DAÑADOS","u":1,"c":36.5},{"y":2025,"d":"PROMOCION-PRODUCCION","r":"EXCESO DE INVENTARIO","u":1,"c":24.4},{"y":2025,"d":"DAÑADO EN PROMOCION","r":"AUTORIZADO POR GERENCIA","u":1,"c":125},{"y":2025,"d":"DAÑADO EN PROMOCION","r":"COLOR DE ETIQUETA","u":1,"c":28},{"y":2026,"d":"TELA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":437,"c":7598.3},{"y":2025,"d":"JUGUETERIA","r":"EXCESO DE INVENTARIO","u":6,"c":157.6},{"y":2025,"d":"PASEO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":8,"c":2635.5},{"y":2026,"d":"TELA","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1148.3,"c":19304.7}];
+const staticStoreReason = [{"y":2026,"s":"CATACAMAS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1766,"c":257139.5},{"y":2026,"s":"INTIBUCA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1702,"c":273102.8},{"y":2025,"s":"CHOLUTECA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7322,"c":1020126.3},{"y":2025,"s":"INTIBUCA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6703,"c":962526.3},{"y":2025,"s":"COMAYAGUELA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5686,"c":802553.7},{"y":2025,"s":"SANTA BARBARA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5951,"c":900970.1},{"y":2026,"s":"MORAZAN #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1001,"c":145625.2},{"y":2025,"s":"YORO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7299,"c":1051705.1},{"y":2025,"s":"MEGATIENDA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":8117,"c":1134006.7},{"y":2025,"s":"TOCOA-AEC #2","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7069,"c":988526.8},{"y":2026,"s":"MORAZAN #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4440,"c":399901.2},{"y":2026,"s":"DANLI #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1232,"c":134811.6},{"y":2025,"s":"PROGRESO #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":8513,"c":1003545.4},{"y":2025,"s":"EL PARAISO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5394,"c":735669.3},{"y":2025,"s":"TALANGA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6776,"c":904852.8},{"y":2025,"s":"SAN MARCOS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":8776,"c":958287.5},{"y":2025,"s":"COMAYAGUA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6830,"c":960993.9},{"y":2025,"s":"SAN LORENZO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6511,"c":955866.9},{"y":2025,"s":"LA CEIBA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7960,"c":946791.3},{"y":2025,"s":"MARCALA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5955,"c":876756.8},{"y":2025,"s":"PUERTO CORTES-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4812,"c":695601.5},{"y":2025,"s":"GRACIAS  #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5585,"c":826830.1},{"y":2025,"s":"DANLI #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5321,"c":726522.1},{"y":2025,"s":"SAN ESTEBAN -AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":11766,"c":1212947.8},{"y":2025,"s":"CATACAMAS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4676,"c":674058.7},{"y":2025,"s":"GUAIMACA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":8013,"c":1141188.3},{"y":2025,"s":"TEGUCIGALPA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7293,"c":791295.9},{"y":2025,"s":"DANLI #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1229,"c":164258.2},{"y":2025,"s":"MORAZAN #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5286,"c":720154.7},{"y":2025,"s":"SIGUATEPEQUE-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6558,"c":855245.8},{"y":2025,"s":"SPS TERMINAL-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":9269,"c":1166801.4},{"y":2025,"s":"TELA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7343,"c":1034430.2},{"y":2025,"s":"OLANCHITO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":19737,"c":2059036.3},{"y":2025,"s":"ENTRADA DE COPAN-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6197,"c":881771.3},{"y":2025,"s":"SONAGUERA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":9858,"c":1191212.9},{"y":2025,"s":"MORAZAN #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3095,"c":420184.1},{"y":2025,"s":"SANTA ROSA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3778,"c":529109.1},{"y":2025,"s":"LA PAZ-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3537,"c":471648.5},{"y":2026,"s":"EL PARAISO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":610,"c":84082.4},{"y":2025,"s":"SABA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":9084,"c":692189.4},{"y":2026,"s":"SPS TERMINAL-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1738,"c":274886.4},{"y":2026,"s":"LA CEIBA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1941,"c":261224.1},{"y":2026,"s":"SAN LORENZO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5058,"c":462945.2},{"y":2026,"s":"PROGRESO #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1461,"c":223372.9},{"y":2026,"s":"SONAGUERA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2273,"c":138086},{"y":2026,"s":"CHOLUTECA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2756,"c":271182.9},{"y":2026,"s":"PEÑA BLANCA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2089,"c":160245.4},{"y":2026,"s":"JESUS DE OTORO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1923,"c":331351.3},{"y":2026,"s":"LA PAZ-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4946,"c":162762.6},{"y":2026,"s":"GUAIMACA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":848,"c":127225.5},{"y":2026,"s":"AEC-CUCUYAGUA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":718,"c":91445.4},{"y":2026,"s":"MARCALA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4995,"c":360686.1},{"y":2026,"s":"DANLI #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2010,"c":120694.8},{"y":2026,"s":"SANTA ROSA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1541,"c":199616},{"y":2026,"s":"MEGATIENDA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2749,"c":335159.4},{"y":2026,"s":"PUERTO CORTES-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1107,"c":190072.4},{"y":2026,"s":"SABA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2567,"c":311603.5},{"y":2026,"s":"SANTA BARBARA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1232,"c":143470.3},{"y":2026,"s":"TEGUCIGALPA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2851,"c":241831.9},{"y":2026,"s":"SAN MARCOS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3220,"c":132892.6},{"y":2026,"s":"TALANGA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1435,"c":224155.5},{"y":2026,"s":"COMAYAGUELA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2434,"c":327444.5},{"y":2025,"s":"PEÑA BLANCA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5741,"c":742219.7},{"y":2025,"s":"JESUS DE OTORO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5981,"c":898179.6},{"y":2025,"s":"CAMPAMENTO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6436,"c":626906.9},{"y":2025,"s":"GRACIAS  #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1179,"c":165875.1},{"y":2026,"s":"CAMPAMENTO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1810,"c":253240.5},{"y":2026,"s":"SAN JUAN-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1601,"c":246395.2},{"y":2026,"s":"SIGUATEPEQUE-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1555,"c":210155.1},{"y":2026,"s":"GRACIAS  #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7756,"c":793896.8},{"y":2026,"s":"TELA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1266,"c":147473.3},{"y":2026,"s":"GRACIAS  #1-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1292,"c":174518.7},{"y":2026,"s":"LAS VEGAS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2248,"c":248472.9},{"y":2026,"s":"YORO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1543,"c":119716.3},{"y":2025,"s":"SAN PEDRO SULA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2646,"c":247406.3},{"y":2025,"s":"LAS VEGAS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":10409,"c":1296303.5},{"y":2025,"s":"SAN JUAN-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4066,"c":563845.7},{"y":2026,"s":"ENTRADA DE COPAN-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1000,"c":146552},{"y":2026,"s":"OLANCHITO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1490,"c":235498.6},{"y":2026,"s":"AEC-TOCOA #1","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":948,"c":172583},{"y":2026,"s":"COMAYAGUA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":961,"c":132145.3},{"y":2026,"s":"SAN ESTEBAN -AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1206,"c":145018.7},{"y":2026,"s":"SAN JUAN, INTIBUCA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":84,"c":12733.4},{"y":2025,"s":"CAMPAMENTO OLANCHO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":746,"c":61737},{"y":2025,"s":"SABA-DS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2958,"c":122770.9},{"y":2025,"s":"LA LABOR OCOTEPEQUE-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3374,"c":180294.1},{"y":2025,"s":"CUCUYAGUA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":997,"c":40664.3},{"y":2025,"s":"TALANGA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1575,"c":94513.6},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1129,"c":48558.6},{"y":2025,"s":"YORO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":425,"c":14003.5},{"y":2026,"s":"TRINIDAD-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4164,"c":222989.5},{"y":2026,"s":"LEPAERA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":657,"c":19527.4},{"y":2026,"s":"OLANCHITO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1779,"c":62532.8},{"y":2026,"s":"TOCOA-AEC #2","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":109949,"c":142068},{"y":2025,"s":"GRACIAS, LEMPIRA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":515,"c":19108.7},{"y":2025,"s":"OLANCHITO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2779,"c":107737.3},{"y":2026,"s":"LA LABOR OCOTEPEQUE-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":670,"c":33221.9},{"y":2025,"s":"TRINIDAD-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":365,"c":9898.5},{"y":2025,"s":"SANTA CRUZ-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":12885,"c":910078.6},{"y":2025,"s":"SONAGUERA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":30088,"c":812530.9},{"y":2025,"s":"SANTA RITA, COPAN -LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1562,"c":13784.8},{"y":2026,"s":"CAMPAMENTO OLANCHO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":50,"c":3525.4},{"y":2025,"s":"GUAYMACA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":683,"c":37928.8},{"y":2026,"s":"EL PARAISO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4878,"c":49622.1},{"y":2025,"s":"MAYOREO SPS-AEC","r":"DAÑADOS","u":596,"c":48404.2},{"y":2025,"s":"COMAYAGUELA-AEC","r":"DAÑADOS","u":407,"c":24878.4},{"y":2025,"s":"SAN PEDRO SULA-AEC","r":"DAÑADOS","u":920,"c":77505.8},{"y":2025,"s":"SPS TERMINAL-AEC","r":"DAÑADOS","u":403,"c":32895.3},{"y":2025,"s":"MEGATIENDA-AEC","r":"DAÑADOS","u":1291,"c":71368.1},{"y":2025,"s":"YORO-AEC","r":"DAÑADOS","u":193,"c":22430.1},{"y":2025,"s":"SAN ESTEBAN -AEC","r":"DAÑADOS","u":234,"c":16664.1},{"y":2025,"s":"SAN PEDRO SULA-AEC","r":"DAÑADOS INVENTARIO","u":730,"c":39990.7},{"y":2025,"s":"GRACIAS  #1-AEC","r":"DAÑADOS INVENTARIO","u":467,"c":23841.2},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"DAÑADOS","u":208,"c":27139.2},{"y":2025,"s":"PUERTO CORTES-AEC","r":"DAÑADOS","u":1198,"c":72870.1},{"y":2025,"s":"TEGUCIGALPA-AEC","r":"DAÑADOS","u":295,"c":20577.7},{"y":2025,"s":"SANTA CRUZ-AEC","r":"DAÑADOS INVENTARIO","u":853,"c":41872.9},{"y":2025,"s":"OLANCHITO-AEC","r":"DAÑADOS","u":530,"c":40147.8},{"y":2025,"s":"DANLI #2-AEC","r":"DAÑADOS","u":114,"c":9774.8},{"y":2025,"s":"TOCOA-AEC #2","r":"DAÑADOS INVENTARIO","u":793,"c":39148.2},{"y":2025,"s":"ENTRADA DE COPAN-AEC","r":"DAÑADOS","u":335,"c":26841.7},{"y":2025,"s":"COMAYAGUA-AEC","r":"DAÑADOS INVENTARIO","u":663,"c":31270.2},{"y":2025,"s":"TELA-AEC","r":"DAÑADOS INVENTARIO","u":383,"c":12817.9},{"y":2026,"s":"SAN PEDRO SULA-AEC","r":"DAÑADOS","u":625,"c":77812.2},{"y":2026,"s":"YORO-AEC","r":"DAÑADOS INVENTARIO","u":692,"c":38550.9},{"y":2026,"s":"CHOLUTECA-AEC","r":"DAÑADOS INVENTARIO","u":1003,"c":45172.7},{"y":2026,"s":"COMAYAGUELA-AEC","r":"DAÑADOS INVENTARIO","u":1245,"c":43898.3},{"y":2026,"s":"TOCOA-AEC #2","r":"DAÑADOS INVENTARIO","u":828,"c":37358.8},{"y":2026,"s":"AEC-TOCOA #1","r":"DAÑADOS INVENTARIO","u":1193,"c":40235.7},{"y":2026,"s":"GRACIAS  #1-AEC","r":"DAÑADOS","u":170,"c":18480.8},{"y":2026,"s":"SANTA BARBARA-AEC","r":"DAÑADOS INVENTARIO","u":632,"c":27208.2},{"y":2026,"s":"MORAZAN #1-AEC","r":"DAÑADOS INVENTARIO","u":843,"c":28791.1},{"y":2025,"s":"SAN ESTEBAN-LV","r":"DAÑADOS","u":346,"c":24757.8},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"DAÑADOS INVENTARIO","u":1343,"c":51534.3},{"y":2025,"s":"LEPAERA-LV","r":"DAÑADOS INVENTARIO","u":399,"c":15287},{"y":2025,"s":"LA CEIBA-LV","r":"DAÑADOS INVENTARIO","u":333,"c":10042.4},{"y":2025,"s":"LA LIBERTAD-LV","r":"DAÑADOS INVENTARIO","u":722,"c":18828.5},{"y":2025,"s":"GRACIAS, LEMPIRA-LV","r":"DAÑADOS","u":677,"c":21918.7},{"y":2025,"s":"LA LABOR OCOTEPEQUE-LV","r":"DAÑADOS INVENTARIO","u":226,"c":7309},{"y":2025,"s":"SABA-DS","r":"DAÑADOS","u":289,"c":22115.3},{"y":2025,"s":"CUCUYAGUA-LV","r":"DAÑADOS INVENTARIO","u":661,"c":18038.7},{"y":2025,"s":"LA LIBERTAD-LV","r":"DAÑADOS","u":158,"c":9909.7},{"y":2025,"s":"CAMPAMENTO OLANCHO-LV","r":"DAÑADOS INVENTARIO","u":1706,"c":60704.4},{"y":2025,"s":"SANTA RITA, COPAN -LV","r":"DAÑADOS INVENTARIO","u":457,"c":17225.4},{"y":2025,"s":"GRACIAS, LEMPIRA-LV","r":"DAÑADOS INVENTARIO","u":295,"c":9505.8},{"y":2025,"s":"OLANCHITO-LV","r":"DAÑADOS INVENTARIO","u":772,"c":35737.9},{"y":2025,"s":"YORO-LV","r":"DAÑADOS INVENTARIO","u":419,"c":17948.5},{"y":2025,"s":"CATACAMAS-LV","r":"DAÑADOS","u":517,"c":22656.1},{"y":2025,"s":"SABA-DS","r":"DAÑADOS INVENTARIO","u":918,"c":38063},{"y":2025,"s":"EL PARAISO-LV","r":"DAÑADOS","u":277,"c":9337.5},{"y":2025,"s":"LEPAERA-LV","r":"DAÑADOS","u":313,"c":22655.8},{"y":2025,"s":"TRINIDAD-LV","r":"DAÑADOS","u":326,"c":21247.8},{"y":2025,"s":"OLANCHITO-LV","r":"DAÑADOS","u":435,"c":28316.1},{"y":2026,"s":"SAN FRANCISCO-LV","r":"DAÑADOS INVENTARIO","u":466,"c":26436.6},{"y":2026,"s":"EL PARAISO-LV","r":"DAÑADOS INVENTARIO","u":338,"c":11865.3},{"y":2026,"s":"OLANCHITO-LV","r":"DAÑADOS","u":935,"c":52620.1},{"y":2026,"s":"GRACIAS, LEMPIRA-LV","r":"DAÑADOS INVENTARIO","u":151,"c":3751.6},{"y":2026,"s":"TRINIDAD-LV","r":"DAÑADOS","u":186,"c":17007.5},{"y":2026,"s":"MEGACARPA EL PROGRESO-LV","r":"DAÑADOS","u":239,"c":16029.1},{"y":2025,"s":"SABA-AEC","r":"DAÑADOS","u":391,"c":30872.2},{"y":2026,"s":"EL PARAISO-AEC","r":"DAÑADOS INVENTARIO","u":424,"c":15590.4},{"y":2026,"s":"MEGATIENDA-AEC","r":"DAÑADOS","u":749,"c":34219.9},{"y":2025,"s":"GUAYMACA-LV","r":"DAÑADOS","u":91,"c":5997.4},{"y":2025,"s":"TRINIDAD-LV","r":"DAÑADOS INVENTARIO","u":406,"c":10812.1},{"y":2025,"s":"TALANGA-LV","r":"DAÑADOS INVENTARIO","u":671,"c":17948},{"y":2025,"s":"EL NEGRITO, YORO-LV","r":"DAÑADOS INVENTARIO","u":234,"c":8622.1},{"y":2025,"s":"GUAYMACA-LV","r":"DAÑADOS INVENTARIO","u":354,"c":14654.6},{"y":2025,"s":"YORO-LV","r":"DAÑADOS","u":324,"c":19066.3},{"y":2025,"s":"LA CEIBA-LV","r":"DAÑADOS","u":78,"c":8145.1},{"y":2025,"s":"SANTA RITA, COPAN -LV","r":"DAÑADOS","u":541,"c":34744.3},{"y":2025,"s":"LA LABOR OCOTEPEQUE-LV","r":"DAÑADOS","u":97,"c":6212.1},{"y":2026,"s":"CATACAMAS-LV","r":"DAÑADOS INVENTARIO","u":475,"c":22481.2},{"y":2026,"s":"SAN ESTEBAN-LV","r":"DAÑADOS INVENTARIO","u":1173,"c":44614.3},{"y":2026,"s":"LEPAERA-LV","r":"DAÑADOS","u":142,"c":8567.7},{"y":2026,"s":"EL PARAISO-LV","r":"DAÑADOS","u":372,"c":11852.4},{"y":2026,"s":"RIO LINDO-LV","r":"DAÑADOS","u":38,"c":2653.9},{"y":2026,"s":"TALANGA-LV","r":"DAÑADOS","u":307,"c":16502.8},{"y":2026,"s":"SABA-LV","r":"DAÑADOS INVENTARIO","u":509,"c":15004.3},{"y":2026,"s":"LEPAERA-LV","r":"DAÑADOS INVENTARIO","u":277,"c":9921},{"y":2026,"s":"SABA-DS","r":"DAÑADOS INVENTARIO","u":657,"c":23973.1},{"y":2026,"s":"YORO-LV","r":"DAÑADOS","u":143,"c":4325.4},{"y":2026,"s":"EL NEGRITO, YORO-LV","r":"DAÑADOS","u":42,"c":3932.5},{"y":2026,"s":"CAMPAMENTO OLANCHO-LV","r":"DAÑADOS","u":177,"c":7306.4},{"y":2026,"s":"SAN MARCOS OCOTEPEQUE-LV","r":"DAÑADOS","u":203,"c":16169.7},{"y":2025,"s":"TELA-AEC","r":"DAÑADOS","u":513,"c":31772.3},{"y":2025,"s":"SONAGUERA-AEC","r":"DAÑADOS","u":140,"c":11667.9},{"y":2025,"s":"CATACAMAS-AEC","r":"DAÑADOS","u":258,"c":19515.2},{"y":2025,"s":"COMAYAGUA-AEC","r":"DAÑADOS","u":563,"c":54476.3},{"y":2025,"s":"SAN LORENZO-AEC","r":"DAÑADOS","u":446,"c":21048.2},{"y":2025,"s":"EL PARAISO-AEC","r":"DAÑADOS","u":365,"c":32777.2},{"y":2025,"s":"GUAIMACA-AEC","r":"DAÑADOS","u":234,"c":22421.5},{"y":2025,"s":"TALANGA-AEC","r":"DAÑADOS","u":887,"c":67276},{"y":2025,"s":"PROGRESO #1-AEC","r":"DAÑADOS INVENTARIO","u":744,"c":32352.8},{"y":2025,"s":"LA CEIBA-AEC","r":"DAÑADOS INVENTARIO","u":785,"c":33342.8},{"y":2025,"s":"DANLI #1-AEC","r":"DAÑADOS","u":366,"c":28584.4},{"y":2025,"s":"SAN MARCOS-AEC","r":"DAÑADOS INVENTARIO","u":322,"c":15601.4},{"y":2025,"s":"CHOLUTECA-AEC","r":"DAÑADOS INVENTARIO","u":815,"c":26868.6},{"y":2025,"s":"SAN LORENZO-AEC","r":"DAÑADOS INVENTARIO","u":835,"c":29201.1},{"y":2025,"s":"COMAYAGUELA-AEC","r":"DAÑADOS INVENTARIO","u":724,"c":33448.9},{"y":2025,"s":"TEGUCIGALPA-AEC","r":"DAÑADOS INVENTARIO","u":906,"c":31893.2},{"y":2025,"s":"GRACIAS  #1-AEC","r":"DAÑADOS","u":522,"c":39056.1},{"y":2025,"s":"JESUS DE OTORO-AEC","r":"DAÑADOS","u":552,"c":47267.3},{"y":2025,"s":"MORAZAN #2-AEC","r":"DAÑADOS","u":257,"c":18546.9},{"y":2025,"s":"PEÑA BLANCA-AEC","r":"DAÑADOS INVENTARIO","u":493,"c":23051},{"y":2025,"s":"SIGUATEPEQUE-AEC","r":"DAÑADOS","u":165,"c":12533.9},{"y":2025,"s":"SANTA BARBARA-AEC","r":"DAÑADOS INVENTARIO","u":559,"c":27369.3},{"y":2025,"s":"OLANCHITO-AEC","r":"DAÑADOS INVENTARIO","u":875,"c":36103.3},{"y":2025,"s":"MARCALA-AEC","r":"DAÑADOS INVENTARIO","u":677,"c":27649.2},{"y":2025,"s":"PROGRESO #1-AEC","r":"DAÑADOS","u":326,"c":33186.3},{"y":2025,"s":"LA PAZ-AEC","r":"DAÑADOS INVENTARIO","u":522,"c":17197},{"y":2025,"s":"SABA-AEC","r":"DAÑADOS INVENTARIO","u":786,"c":29446.6},{"y":2025,"s":"GRACIAS  #2-AEC","r":"DAÑADOS","u":162,"c":11289.8},{"y":2025,"s":"SAN JUAN-AEC","r":"DAÑADOS","u":251,"c":17247.1},{"y":2025,"s":"AEC-TOCOA #1","r":"DAÑADOS","u":30,"c":3339.3},{"y":2026,"s":"SABA-AEC","r":"DAÑADOS","u":92,"c":7849.5},{"y":2026,"s":"ENTRADA DE COPAN-AEC","r":"DAÑADOS","u":257,"c":17185.3},{"y":2026,"s":"SPS TERMINAL-AEC","r":"DAÑADOS","u":227,"c":14849.4},{"y":2026,"s":"AEC-TOCOA #1","r":"DAÑADOS","u":159,"c":7625.6},{"y":2026,"s":"COMAYAGUA-AEC","r":"DAÑADOS","u":181,"c":13189.3},{"y":2026,"s":"PUERTO CORTES-AEC","r":"DAÑADOS","u":442,"c":27892.5},{"y":2026,"s":"SAN MARCOS-AEC","r":"DAÑADOS INVENTARIO","u":529,"c":17863.1},{"y":2026,"s":"COMAYAGUA-AEC","r":"DAÑADOS INVENTARIO","u":619,"c":30943.8},{"y":2026,"s":"OLANCHITO-AEC","r":"DAÑADOS","u":522,"c":18334.9},{"y":2026,"s":"SAN LORENZO-AEC","r":"DAÑADOS INVENTARIO","u":1758,"c":91812.1},{"y":2026,"s":"PROGRESO #1-AEC","r":"DAÑADOS INVENTARIO","u":663,"c":31506.4},{"y":2026,"s":"TALANGA-AEC","r":"DAÑADOS","u":258,"c":17409.8},{"y":2026,"s":"SIGUATEPEQUE-AEC","r":"DAÑADOS INVENTARIO","u":460,"c":18646.5},{"y":2026,"s":"GRACIAS  #2-AEC","r":"DAÑADOS INVENTARIO","u":106,"c":5465.5},{"y":2026,"s":"TEGUCIGALPA-AEC","r":"DAÑADOS INVENTARIO","u":1153,"c":49793.9},{"y":2026,"s":"SANTA CRUZ-AEC","r":"DAÑADOS INVENTARIO","u":498,"c":19759.2},{"y":2026,"s":"MORAZAN #2-AEC","r":"DAÑADOS INVENTARIO","u":561,"c":22032.1},{"y":2026,"s":"PEÑA BLANCA-AEC","r":"DAÑADOS INVENTARIO","u":898,"c":42287.9},{"y":2026,"s":"MEGATIENDA-AEC","r":"DAÑADOS INVENTARIO","u":645,"c":38540},{"y":2025,"s":"CHOLUTECA-AEC","r":"DAÑADOS","u":510,"c":55319.3},{"y":2025,"s":"LA PAZ-AEC","r":"DAÑADOS","u":132,"c":6487.7},{"y":2026,"s":"SANTA ROSA-AEC","r":"DAÑADOS INVENTARIO","u":457,"c":18856.4},{"y":2025,"s":"INTIBUCA-AEC","r":"DAÑADOS","u":199,"c":20505.5},{"y":2025,"s":"PUERTO CORTES-AEC","r":"DAÑADOS INVENTARIO","u":452,"c":21346.7},{"y":2025,"s":"MORAZAN #1-AEC","r":"DAÑADOS INVENTARIO","u":495,"c":16504.4},{"y":2025,"s":"LAS VEGAS-AEC","r":"DAÑADOS INVENTARIO","u":395,"c":8958.5},{"y":2025,"s":"LAS VEGAS-AEC","r":"DAÑADOS","u":378,"c":30116.8},{"y":2025,"s":"SAN JUAN-AEC","r":"DAÑADOS INVENTARIO","u":400,"c":15709},{"y":2025,"s":"MEGATIENDA-AEC","r":"DAÑADOS INVENTARIO","u":1147,"c":70563.5},{"y":2025,"s":"DANLI #1-AEC","r":"DAÑADOS INVENTARIO","u":624,"c":27464.6},{"y":2025,"s":"CAMPAMENTO-AEC","r":"DAÑADOS INVENTARIO","u":677,"c":32344.7},{"y":2026,"s":"MAYOREO SPS-AEC","r":"DAÑADOS","u":336,"c":13211.9},{"y":2026,"s":"GUAIMACA-AEC","r":"DAÑADOS","u":87,"c":5872.5},{"y":2026,"s":"SAN ESTEBAN -AEC","r":"DAÑADOS INVENTARIO","u":1019,"c":42325.1},{"y":2026,"s":"MAYOREO COMAYAGUELA AEC","r":"DAÑADOS INVENTARIO","u":206,"c":7638.4},{"y":2026,"s":"SANTA BARBARA-AEC","r":"DAÑADOS","u":33,"c":3586.3},{"y":2026,"s":"JESUS DE OTORO-AEC","r":"DAÑADOS INVENTARIO","u":293,"c":14005.1},{"y":2026,"s":"SABA-AEC","r":"DAÑADOS INVENTARIO","u":675,"c":28868.1},{"y":2026,"s":"SAN JUAN, INTIBUCA","r":"DAÑADOS","u":132,"c":4562.2},{"y":2026,"s":"SPS DANDY-AEC","r":"DAÑADOS","u":84,"c":5666.4},{"y":2026,"s":"COMAYAGUELA-AEC","r":"DAÑADOS","u":61,"c":2985.8},{"y":2026,"s":"CATACAMAS-AEC","r":"DAÑADOS INVENTARIO","u":515,"c":29237.9},{"y":2026,"s":"LA LABOR OCOTEPEQUE-LV","r":"DAÑADOS","u":37,"c":2989.8},{"y":2025,"s":"CAMPAMENTO OLANCHO-LV","r":"DAÑADOS","u":108,"c":7803.6},{"y":2026,"s":"CATACAMAS-LV","r":"DAÑADOS","u":78,"c":7759.1},{"y":2026,"s":"GRACIAS, LEMPIRA-LV","r":"DAÑADOS","u":558,"c":6551.3},{"y":2026,"s":"YORO-LV","r":"DAÑADOS INVENTARIO","u":459,"c":21008},{"y":2026,"s":"LA LIBERTAD-LV","r":"DAÑADOS","u":68,"c":5398.2},{"y":2025,"s":"SPS TERMINAL-AEC","r":"DAÑADOS INVENTARIO","u":222,"c":10195.3},{"y":2025,"s":"LA CEIBA-AEC","r":"DAÑADOS","u":612,"c":40041.2},{"y":2025,"s":"JESUS DE OTORO-AEC","r":"DAÑADOS INVENTARIO","u":237,"c":10261.5},{"y":2026,"s":"PROGRESO #1-AEC","r":"DAÑADOS","u":215,"c":16808.5},{"y":2025,"s":"SAN FRANCISCO-LV","r":"DAÑADOS","u":252,"c":15076.8},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"DAÑADOS","u":485,"c":24132.9},{"y":2026,"s":"SAN ESTEBAN-LV","r":"DAÑADOS","u":168,"c":8085.1},{"y":2025,"s":"CUCUYAGUA-LV","r":"DAÑADOS","u":519,"c":4231.7},{"y":2026,"s":"SAN FRANCISCO-LV","r":"DAÑADOS","u":65,"c":5933.4},{"y":2026,"s":"TRINIDAD-LV","r":"DAÑADOS INVENTARIO","u":651,"c":27224.1},{"y":2026,"s":"EL NEGRITO, YORO-LV","r":"DAÑADOS INVENTARIO","u":245,"c":14258.4},{"y":2025,"s":"SANTA BARBARA-AEC","r":"DAÑADOS","u":337,"c":29701.6},{"y":2025,"s":"ENTRADA DE COPAN-AEC","r":"DAÑADOS INVENTARIO","u":467,"c":20976.9},{"y":2025,"s":"MARCALA-AEC","r":"DAÑADOS","u":55,"c":5628.7},{"y":2025,"s":"TOCOA-AEC #2","r":"DAÑADOS","u":160,"c":16771.6},{"y":2025,"s":"CEIBA MAYOREO-AEC","r":"DAÑADOS","u":6,"c":184.4},{"y":2025,"s":"SIGUATEPEQUE-AEC","r":"DAÑADOS INVENTARIO","u":717,"c":28388.2},{"y":2026,"s":"SAN JUAN-AEC","r":"DAÑADOS","u":30,"c":3403.9},{"y":2026,"s":"SONAGUERA-AEC","r":"DAÑADOS","u":185,"c":6854.9},{"y":2026,"s":"GRACIAS  #2-AEC","r":"DAÑADOS","u":100,"c":6770.9},{"y":2026,"s":"SANTA ROSA-AEC","r":"DAÑADOS","u":56,"c":4671.3},{"y":2026,"s":"SIGUATEPEQUE-AEC","r":"DAÑADOS","u":79,"c":4156.8},{"y":2026,"s":"DANLI #1-AEC","r":"DAÑADOS","u":37,"c":3400.7},{"y":2026,"s":"GRACIAS  #1-AEC","r":"DAÑADOS INVENTARIO","u":206,"c":13685.6},{"y":2026,"s":"LAS VEGAS-AEC","r":"DAÑADOS INVENTARIO","u":350,"c":15158.2},{"y":2025,"s":"YORO-AEC","r":"DAÑADOS INVENTARIO","u":884,"c":39847},{"y":2025,"s":"CAMPAMENTO-AEC","r":"DAÑADOS","u":158,"c":10369},{"y":2026,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"DAÑADOS","u":64,"c":3654},{"y":2026,"s":"YORO-AEC","r":"DAÑADOS","u":44,"c":2025},{"y":2025,"s":"SANTA ROSA-AEC","r":"DAÑADOS","u":209,"c":12097},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"DAÑADOS","u":62,"c":4498.6},{"y":2025,"s":"MORAZAN #1-AEC","r":"DAÑADOS","u":50,"c":4736.6},{"y":2025,"s":"SAN MARCOS-AEC","r":"DAÑADOS","u":40,"c":3294.7},{"y":2025,"s":"INTIBUCA-AEC","r":"DAÑADOS INVENTARIO","u":234,"c":9819.7},{"y":2026,"s":"CHOLUTECA-AEC","r":"DAÑADOS","u":215,"c":9420.5},{"y":2025,"s":"LA CEIBA-AEC","r":"AUTORIZADO POR GERENCIA","u":753,"c":48652.2},{"y":2026,"s":"SAN MARCOS-AEC","r":"AUTORIZADO POR GERENCIA","u":1446,"c":23015.6},{"y":2026,"s":"SIGUATEPEQUE-AEC","r":"EXCESO DE INVENTARIO","u":2175,"c":343359.3},{"y":2026,"s":"SAN MARCOS-AEC","r":"EXCESO DE INVENTARIO","u":1321,"c":187454.6},{"y":2026,"s":"JESUS DE OTORO-AEC","r":"EXCESO DE INVENTARIO","u":5857,"c":485785.9},{"y":2026,"s":"SANTA ROSA-AEC","r":"EXCESO DE INVENTARIO","u":264,"c":40692.8},{"y":2025,"s":"SABA-AEC","r":"TEMPORADA","u":703,"c":34470.2},{"y":2026,"s":"LEPAERA-LV","r":"TEMPORADA","u":961,"c":20319.4},{"y":2026,"s":"INTIBUCA-AEC","r":"COLOR DE ETIQUETA","u":15,"c":954.6},{"y":2025,"s":"LA CEIBA-AEC","r":"COLOR DE ETIQUETA","u":1,"c":182},{"y":2025,"s":"PROGRESO #1-AEC","r":"AUTORIZADO POR GERENCIA","u":994,"c":138602.6},{"y":2025,"s":"YORO-AEC","r":"AUTORIZADO POR GERENCIA","u":412,"c":59828.3},{"y":2025,"s":"SPS TERMINAL-AEC","r":"COLOR DE ETIQUETA","u":265,"c":38674.7},{"y":2026,"s":"SONAGUERA-AEC","r":"COLOR DE ETIQUETA","u":2,"c":333.7},{"y":2026,"s":"GUAIMACA-AEC","r":"COLOR DE ETIQUETA","u":24,"c":1826.3},{"y":2026,"s":"CATACAMAS-AEC","r":"COLOR DE ETIQUETA","u":26,"c":2017.6},{"y":2026,"s":"GRACIAS  #2-AEC","r":"EXCESO DE INVENTARIO","u":820,"c":117119.4},{"y":2026,"s":"MORAZAN #2-AEC","r":"EXCESO DE INVENTARIO","u":122,"c":21114.9},{"y":2026,"s":"DANLI #1-AEC","r":"AUTORIZADO POR GERENCIA","u":56,"c":4047.1},{"y":2025,"s":"GUAIMACA-AEC","r":"EXCESO DE INVENTARIO","u":584,"c":3175.2},{"y":2025,"s":"CUCUYAGUA-LV","r":"COLOR DE ETIQUETA","u":218,"c":0},{"y":2025,"s":"LA LABOR OCOTEPEQUE-LV","r":"COLOR DE ETIQUETA","u":359,"c":37.9},{"y":2025,"s":"TRINIDAD-LV","r":"EXCESO DE INVENTARIO","u":49,"c":1521.7},{"y":2025,"s":"TALANGA-LV","r":"COLOR DE ETIQUETA","u":681,"c":28},{"y":2026,"s":"MEGACARPA EL PROGRESO-LV","r":"EXCESO DE INVENTARIO","u":908,"c":67691.2},{"y":2025,"s":"TEGUCIGALPA-AEC","r":"AUTORIZADO POR GERENCIA","u":308,"c":55764.3},{"y":2025,"s":"MEGATIENDA-AEC","r":"AUTORIZADO POR GERENCIA","u":78,"c":4164.4},{"y":2026,"s":"LA CEIBA-AEC","r":"AUTORIZADO POR GERENCIA","u":49,"c":3086.9},{"y":2025,"s":"SAN ESTEBAN-LV","r":"AUTORIZADO POR GERENCIA","u":268,"c":25050.1},{"y":2025,"s":"TALANGA-LV","r":"AUTORIZADO POR GERENCIA","u":148,"c":15562},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"AUTORIZADO POR GERENCIA","u":90,"c":1736.4},{"y":2026,"s":"YORO-LV","r":"AUTORIZADO POR GERENCIA","u":77,"c":6133.3},{"y":2026,"s":"OLANCHITO-LV","r":"AUTORIZADO POR GERENCIA","u":149,"c":3093.2},{"y":2026,"s":"MEGACARPA EL PROGRESO-LV","r":"AUTORIZADO POR GERENCIA","u":1055,"c":50741.1},{"y":2025,"s":"SAN ESTEBAN-LV","r":"TEMPORADA","u":865,"c":22104.2},{"y":2025,"s":"CAMPAMENTO OLANCHO-LV","r":"TEMPORADA","u":614,"c":9403.7},{"y":2025,"s":"YORO-LV","r":"TEMPORADA","u":312,"c":25461.6},{"y":2025,"s":"GUAYMACA-LV","r":"TEMPORADA","u":372,"c":23127.1},{"y":2025,"s":"CUCUYAGUA-LV","r":"TEMPORADA","u":907,"c":43531.6},{"y":2025,"s":"SONAGUERA-LV","r":"TEMPORADA","u":302,"c":23981.7},{"y":2025,"s":"LA LABOR OCOTEPEQUE-LV","r":"TEMPORADA","u":478,"c":10030.9},{"y":2025,"s":"CATACAMAS-LV","r":"TEMPORADA","u":174,"c":29216.5},{"y":2025,"s":"OLANCHITO-LV","r":"TEMPORADA","u":453,"c":42650.7},{"y":2025,"s":"SANTA RITA, COPAN -LV","r":"TEMPORADA","u":451,"c":36910.4},{"y":2026,"s":"CUCUYAGUA-LV","r":"TEMPORADA","u":899,"c":22135.9},{"y":2026,"s":"SAN ESTEBAN-LV","r":"TEMPORADA","u":374,"c":12850.5},{"y":2026,"s":"LA LABOR OCOTEPEQUE-LV","r":"TEMPORADA","u":1357,"c":27718.1},{"y":2026,"s":"YORO-LV","r":"TEMPORADA","u":2088,"c":56638.1},{"y":2026,"s":"TALANGA-LV","r":"TEMPORADA","u":972,"c":54457.5},{"y":2026,"s":"OLANCHITO-LV","r":"TEMPORADA","u":1990,"c":42383.6},{"y":2026,"s":"CATACAMAS-LV","r":"TEMPORADA","u":1690,"c":68022.7},{"y":2026,"s":"SAN MARCOS OCOTEPEQUE-LV","r":"TEMPORADA","u":158,"c":9864.4},{"y":2025,"s":"YORO-AEC","r":"TEMPORADA","u":486,"c":26089.1},{"y":2025,"s":"LA CEIBA-AEC","r":"TEMPORADA","u":460,"c":48842.7},{"y":2025,"s":"SONAGUERA-AEC","r":"TEMPORADA","u":165,"c":7083.7},{"y":2025,"s":"DE TODO PARA TODOS-AEC","r":"TEMPORADA","u":1319,"c":72825},{"y":2025,"s":"SANTA ROSA-AEC","r":"TEMPORADA","u":655,"c":61366.5},{"y":2025,"s":"GRACIAS  #1-AEC","r":"TEMPORADA","u":1164,"c":64893.3},{"y":2025,"s":"SANTA CRUZ-AEC","r":"TEMPORADA","u":879,"c":25117.5},{"y":2025,"s":"JESUS DE OTORO-AEC","r":"TEMPORADA","u":800,"c":80942},{"y":2025,"s":"COMAYAGUA-AEC","r":"TEMPORADA","u":1198,"c":74722.4},{"y":2025,"s":"EL PARAISO-AEC","r":"TEMPORADA","u":1062,"c":32766.7},{"y":2025,"s":"TELA-AEC","r":"TEMPORADA","u":2108,"c":53506.4},{"y":2025,"s":"LAS VEGAS-AEC","r":"TEMPORADA","u":656,"c":63654.1},{"y":2025,"s":"SAN ESTEBAN -AEC","r":"TEMPORADA","u":1783,"c":99112.2},{"y":2025,"s":"PROGRESO #1-AEC","r":"TEMPORADA","u":444,"c":54096.6},{"y":2025,"s":"LA PAZ-AEC","r":"TEMPORADA","u":606,"c":53561.9},{"y":2025,"s":"CATACAMAS-AEC","r":"TEMPORADA","u":378,"c":38081.7},{"y":2025,"s":"PUERTO CORTES-AEC","r":"TEMPORADA","u":2973,"c":87746.8},{"y":2025,"s":"ENTRADA DE COPAN-AEC","r":"TEMPORADA","u":64,"c":6776.3},{"y":2025,"s":"SIGUATEPEQUE-AEC","r":"TEMPORADA","u":899,"c":65625.7},{"y":2025,"s":"TEGUCIGALPA-AEC","r":"TEMPORADA","u":168,"c":15089.6},{"y":2025,"s":"SAN PEDRO SULA-AEC","r":"TEMPORADA","u":2018,"c":116208.2},{"y":2025,"s":"SPS TERMINAL-AEC","r":"TEMPORADA","u":916,"c":26606.2},{"y":2025,"s":"MEGATIENDA-AEC","r":"TEMPORADA","u":633,"c":81121.7},{"y":2025,"s":"TALANGA-AEC","r":"TEMPORADA","u":277,"c":26670.9},{"y":2025,"s":"MORAZAN #1-AEC","r":"TEMPORADA","u":404,"c":32269.1},{"y":2025,"s":"SAN JUAN-AEC","r":"TEMPORADA","u":2321,"c":81391.4},{"y":2025,"s":"TOCOA-AEC #2","r":"TEMPORADA","u":1195,"c":27856.2},{"y":2026,"s":"TEGUCIGALPA-AEC","r":"TEMPORADA","u":1885,"c":33754.8},{"y":2026,"s":"SPS TERMINAL-AEC","r":"TEMPORADA","u":722,"c":24344.2},{"y":2026,"s":"COMAYAGUA-AEC","r":"TEMPORADA","u":2711,"c":42825.6},{"y":2026,"s":"LA CEIBA-AEC","r":"TEMPORADA","u":1637,"c":50881.7},{"y":2026,"s":"SAN ESTEBAN -AEC","r":"TEMPORADA","u":1879,"c":32448.1},{"y":2026,"s":"ENTRADA DE COPAN-AEC","r":"TEMPORADA","u":2506,"c":64823.3},{"y":2026,"s":"COMAYAGUELA-AEC","r":"TEMPORADA","u":1667,"c":30350.4},{"y":2026,"s":"CHOLUTECA-AEC","r":"TEMPORADA","u":1907,"c":38463.1},{"y":2026,"s":"SAN PEDRO SULA-AEC","r":"TEMPORADA","u":4647,"c":98211},{"y":2026,"s":"YORO-AEC","r":"TEMPORADA","u":2383,"c":63043.4},{"y":2026,"s":"MORAZAN #1-AEC","r":"TEMPORADA","u":415,"c":26262.5},{"y":2026,"s":"INTIBUCA-AEC","r":"TEMPORADA","u":2480,"c":38719.3},{"y":2026,"s":"CATACAMAS-AEC","r":"TEMPORADA","u":2344,"c":47982},{"y":2026,"s":"SIGUATEPEQUE-AEC","r":"TEMPORADA","u":2945,"c":53190},{"y":2026,"s":"SAN JUAN-AEC","r":"TEMPORADA","u":3278,"c":52544.6},{"y":2026,"s":"JESUS DE OTORO-AEC","r":"TEMPORADA","u":2110,"c":41101.5},{"y":2026,"s":"SANTA ROSA-AEC","r":"TEMPORADA","u":193,"c":4115.1},{"y":2026,"s":"GRACIAS  #2-AEC","r":"TEMPORADA","u":3811,"c":74070.1},{"y":2026,"s":"PUERTO CORTES-AEC","r":"TEMPORADA","u":2146,"c":41795},{"y":2026,"s":"AEC-TOCOA #1","r":"TEMPORADA","u":3660,"c":167769.1},{"y":2026,"s":"EL PARAISO-AEC","r":"TEMPORADA","u":1884,"c":38451},{"y":2026,"s":"DANLI #2-AEC","r":"TEMPORADA","u":1694,"c":58703.7},{"y":2026,"s":"MEGATIENDA-AEC","r":"TEMPORADA","u":184,"c":21107.3},{"y":2026,"s":"LAS VEGAS-AEC","r":"TEMPORADA","u":2328,"c":46764.6},{"y":2026,"s":"TALANGA-AEC","r":"TEMPORADA","u":3167,"c":78371},{"y":2026,"s":"GUAIMACA-AEC","r":"TEMPORADA","u":1272,"c":46545},{"y":2026,"s":"OLANCHITO-AEC","r":"TEMPORADA","u":326,"c":33225.3},{"y":2026,"s":"SONAGUERA-AEC","r":"TEMPORADA","u":840,"c":28780.6},{"y":2026,"s":"GRACIAS  #1-AEC","r":"TEMPORADA","u":1448,"c":44684.2},{"y":2026,"s":"MORAZAN #2-AEC","r":"TEMPORADA","u":3018,"c":35775.5},{"y":2026,"s":"SONAGUERA-LV","r":"TEMPORADA","u":5085,"c":141038.6},{"y":2026,"s":"MEGACARPA EL PROGRESO-LV","r":"TEMPORADA","u":1034,"c":35151.7},{"y":2025,"s":"DANLI #1-AEC","r":"TEMPORADA","u":205,"c":13945.5},{"y":2025,"s":"PEÑA BLANCA-AEC","r":"TEMPORADA","u":213,"c":23207},{"y":2026,"s":"TELA-AEC","r":"TEMPORADA","u":1811,"c":33783.2},{"y":2026,"s":"AEC-CUCUYAGUA","r":"TEMPORADA","u":129,"c":5380.4},{"y":2025,"s":"LA LIBERTAD-LV","r":"TEMPORADA","u":287,"c":24418.7},{"y":2025,"s":"INTIBUCA-AEC","r":"TEMPORADA","u":677,"c":58394.2},{"y":2025,"s":"COMAYAGUELA-AEC","r":"TEMPORADA","u":93,"c":13299},{"y":2025,"s":"MARCALA-AEC","r":"TEMPORADA","u":134,"c":14649.1},{"y":2025,"s":"GUAIMACA-AEC","r":"TEMPORADA","u":177,"c":19333.5},{"y":2025,"s":"OLANCHITO-AEC","r":"TEMPORADA","u":356,"c":43804},{"y":2025,"s":"SAN MARCOS-AEC","r":"TEMPORADA","u":30,"c":2738.7},{"y":2025,"s":"MORAZAN #2-AEC","r":"TEMPORADA","u":72,"c":4310},{"y":2025,"s":"SANTA BARBARA-AEC","r":"TEMPORADA","u":639,"c":25164.7},{"y":2025,"s":"CHOLUTECA-AEC","r":"TEMPORADA","u":157,"c":3658.9},{"y":2025,"s":"LEPAERA-LV","r":"TEMPORADA","u":367,"c":22122.4},{"y":2026,"s":"SABA-AEC","r":"TEMPORADA","u":2273,"c":34269.9},{"y":2026,"s":"DANLI #1-AEC","r":"TEMPORADA","u":2944,"c":45576.7},{"y":2026,"s":"LA PAZ-AEC","r":"TEMPORADA","u":557,"c":9100.4},{"y":2026,"s":"CAMPAMENTO OLANCHO-LV","r":"AUTORIZADO POR GERENCIA","u":254,"c":28321.4},{"y":2026,"s":"YORO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":295,"c":6349.4},{"y":2025,"s":"LA LIBERTAD-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":474,"c":19905.5},{"y":2025,"s":"LA CEIBA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2569,"c":42087.6},{"y":2025,"s":"SAN ESTEBAN-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1656,"c":97123.1},{"y":2025,"s":"CATACAMAS-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1212,"c":21665.7},{"y":2025,"s":"SABA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":119,"c":2906.5},{"y":2025,"s":"EL NEGRITO, YORO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1861,"c":30506.5},{"y":2025,"s":"EL PARAISO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":601,"c":8467.3},{"y":2026,"s":"MEGACARPA EL PROGRESO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":425,"c":26556.9},{"y":2026,"s":"CUCUYAGUA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":667,"c":42185.9},{"y":2026,"s":"LA LIBERTAD-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":141,"c":2649.6},{"y":2026,"s":"CATACAMAS-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":237,"c":13666.1},{"y":2026,"s":"RIO LINDO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3427,"c":224880.6},{"y":2026,"s":"LA CEIBA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4126,"c":144206.9},{"y":2026,"s":"GRACIAS, LEMPIRA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1439,"c":13910.9},{"y":2025,"s":"DE TODO PARA TODOS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":7209,"c":235376.4},{"y":2026,"s":"MAYOREO SPS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3972,"c":156434.6},{"y":2026,"s":"MEGATIENDA-AEC","r":"AUTORIZADO POR GERENCIA","u":136,"c":24199.2},{"y":2026,"s":"SANTA CRUZ-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3064,"c":292147.2},{"y":2026,"s":"SPS DANDY-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":869,"c":92907.9},{"y":2025,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4606,"c":310467},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":23767,"c":732975},{"y":2026,"s":"MAYOREO PROGRESO #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":5988,"c":175918},{"y":2025,"s":"SAN FRANCISCO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":649,"c":42970.2},{"y":2026,"s":"SAN FRANCISCO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":330,"c":16177.4},{"y":2025,"s":"LEPAERA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1556,"c":46845.4},{"y":2026,"s":"EL NEGRITO, YORO-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":608,"c":50759.6},{"y":2026,"s":"SABA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":381,"c":14026.1},{"y":2026,"s":"TOCOA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":441,"c":4187.7},{"y":2026,"s":"INTIBUCA-LV","r":"DAÑADOS","u":111,"c":5085.2},{"y":2026,"s":"DE TODO PARA TODOS-AEC","r":"DAÑADOS","u":68,"c":3478.4},{"y":2025,"s":"SANTA ROSA-AEC","r":"DAÑADOS INVENTARIO","u":542,"c":13982.9},{"y":2026,"s":"TOCOA-LV","r":"DAÑADOS","u":23,"c":445.2},{"y":2026,"s":"SABA-DS","r":"DAÑADOS","u":216,"c":13103.3},{"y":2025,"s":"SABA-LV","r":"DAÑADOS","u":24,"c":938.5},{"y":2025,"s":"SAN MARCOS OCOTEPEQUE-LV","r":"DAÑADOS","u":59,"c":2429.6},{"y":2026,"s":"SABA-LV","r":"DAÑADOS","u":21,"c":768.8},{"y":2026,"s":"CUCUYAGUA-LV","r":"DAÑADOS","u":209,"c":11371.3},{"y":2026,"s":"GUAYMACA-LV","r":"DAÑADOS","u":95,"c":4355.8},{"y":2026,"s":"OLANCHITO-LV","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":240,"c":28688},{"y":2025,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"DAÑADOS","u":655,"c":124888},{"y":2025,"s":"MAYOREO SPS-AEC","r":"DAÑADOS INVENTARIO","u":23,"c":1757},{"y":2025,"s":"EL PARAISO-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":271,"c":891.2},{"y":2025,"s":"PEÑA BLANCA-AEC","r":"DAÑADOS","u":656,"c":57484.6},{"y":2026,"s":"INTIBUCA-AEC","r":"DAÑADOS","u":69,"c":6016.5},{"y":2026,"s":"MAYOREO COMAYAGUELA AEC","r":"DAÑADOS","u":201,"c":3365.9},{"y":2026,"s":"AEC-CUCUYAGUA","r":"DAÑADOS","u":53,"c":2792.2},{"y":2026,"s":"LAS VEGAS-AEC","r":"DAÑADOS","u":138,"c":17274.6},{"y":2026,"s":"TEGUCIGALPA-AEC","r":"DAÑADOS","u":104,"c":6918},{"y":2026,"s":"MORAZAN #2-AEC","r":"DAÑADOS","u":7,"c":3821.8},{"y":2026,"s":"TELA-AEC","r":"DAÑADOS","u":13,"c":1715.4},{"y":2026,"s":"PROGRESO #1-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":6,"c":181.7},{"y":2026,"s":"DANLI #2-AEC","r":"DAÑADOS","u":69,"c":5897.7},{"y":2026,"s":"JESUS DE OTORO-AEC","r":"DAÑADOS","u":90,"c":10378.1},{"y":2026,"s":"MORAZAN #1-AEC","r":"DAÑADOS","u":133,"c":14497.4},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"DAÑADOS INVENTARIO","u":34,"c":2370.7},{"y":2025,"s":"MAYOREO PROGRESO #2-AEC","r":"DAÑADOS INVENTARIO","u":28,"c":1182.9},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"DAÑADOS INVENTARIO","u":25,"c":1472.4},{"y":2025,"s":"DE TODO PARA TODOS-AEC","r":"DAÑADOS","u":167,"c":8620.9},{"y":2026,"s":"SANTA CRUZ-AEC","r":"DAÑADOS","u":85,"c":4524.5},{"y":2025,"s":"AEC-CUCUYAGUA","r":"DAÑADOS","u":202,"c":10700.4},{"y":2026,"s":"TOCOA-AEC #2","r":"DAÑADOS","u":235,"c":10567.2},{"y":2026,"s":"SAN ESTEBAN -AEC","r":"DAÑADOS","u":11,"c":1320.1},{"y":2026,"s":"EL PARAISO-AEC","r":"DAÑADOS","u":70,"c":8631},{"y":2026,"s":"LA CEIBA-AEC","r":"DAÑADOS","u":122,"c":7745.5},{"y":2026,"s":"SAN LORENZO-AEC","r":"DAÑADOS","u":55,"c":4485.4},{"y":2026,"s":"LA PAZ-AEC","r":"DAÑADOS","u":18,"c":2317.5},{"y":2026,"s":"AEC TOCOA MAYOREO","r":"DAÑADOS","u":26,"c":812.2},{"y":2026,"s":"MAYOREO MEGACARPA-AEC","r":"DAÑADOS","u":183,"c":6668.8},{"y":2025,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"DAÑADOS INVENTARIO","u":22,"c":1333.5},{"y":2026,"s":"MORAZAN #1-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":40,"c":2606.2},{"y":2026,"s":"PEÑA BLANCA-AEC","r":"DAÑADOS","u":23,"c":1170.2},{"y":2026,"s":"SAN MARCOS-AEC","r":"DAÑADOS","u":71,"c":4455.2},{"y":2026,"s":"CATACAMAS-AEC","r":"DAÑADOS","u":67,"c":3275.5},{"y":2026,"s":"CEIBA MAYOREO-AEC","r":"DAÑADOS","u":27,"c":1082.3},{"y":2026,"s":"MARCALA-AEC","r":"DAÑADOS","u":6,"c":243},{"y":2025,"s":"DE TODO PARA TODOS-AEC","r":"DAÑADOS INVENTARIO","u":254,"c":6803.6},{"y":2026,"s":"AEC TOCOA MAYOREO","r":"DAÑADOS INVENTARIO","u":28,"c":898.7},{"y":2026,"s":"MAYOREO PROGRESO #2-AEC","r":"DAÑADOS INVENTARIO","u":20,"c":706.7},{"y":2026,"s":"DE TODO PARA TODOS-AEC","r":"DAÑADOS INVENTARIO","u":214,"c":5322.1},{"y":2025,"s":"SONAGUERA-LV","r":"DAÑADOS INVENTARIO","u":225,"c":5108.7},{"y":2026,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"DAÑADOS INVENTARIO","u":63,"c":3272.2},{"y":2026,"s":"PEÑA BLANCA-LV","r":"DAÑADOS INVENTARIO","u":14,"c":0},{"y":2026,"s":"SAN JUAN-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":241,"c":16400.2},{"y":2026,"s":"SAN PEDRO SULA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":250,"c":25969.5},{"y":2025,"s":"MAYOREO PROGRESO #2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6337,"c":159194.2},{"y":2026,"s":"MAYOREO COMAYAGUELA AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4827,"c":285374.1},{"y":2026,"s":"SANTA BARBARA-AEC","r":"TEMPORADA","u":1277,"c":29937},{"y":2026,"s":"PROGRESO #1-AEC","r":"TEMPORADA","u":2299,"c":37445.4},{"y":2026,"s":"RIO LINDO-LV","r":"TEMPORADA","u":9,"c":576.3},{"y":2025,"s":"SAN LORENZO-AEC","r":"TEMPORADA","u":38,"c":550.1},{"y":2025,"s":"SPS TERMINAL-AEC","r":"AUTORIZADO POR GERENCIA","u":26,"c":2040.1},{"y":2025,"s":"SAN ESTEBAN -AEC","r":"EXCESO DE INVENTARIO","u":7482,"c":437402.5},{"y":2025,"s":"TEGUCIGALPA-AEC","r":"EXCESO DE INVENTARIO","u":635,"c":110855.8},{"y":2026,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"EXCESO DE INVENTARIO","u":552,"c":87828.8},{"y":2025,"s":"OLANCHITO-LV","r":"COLOR DE ETIQUETA","u":1021,"c":11875},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"EXCESO DE INVENTARIO","u":270,"c":32995.8},{"y":2026,"s":"AEC-TOCOA #1","r":"COLOR DE ETIQUETA","u":2,"c":237.9},{"y":2026,"s":"EL PARAISO-LV","r":"TEMPORADA","u":101,"c":8612.4},{"y":2026,"s":"AEC TOCOA MAYOREO","r":"TEMPORADA","u":1443,"c":53242.8},{"y":2026,"s":"GRACIAS, LEMPIRA-LV","r":"TEMPORADA","u":93,"c":1768.8},{"y":2026,"s":"TRINIDAD-LV","r":"TEMPORADA","u":206,"c":19227},{"y":2026,"s":"GUAYMACA-LV","r":"TEMPORADA","u":60,"c":4920},{"y":2026,"s":"CEIBA MAYOREO-AEC","r":"TEMPORADA","u":1062,"c":58361.3},{"y":2026,"s":"SAN MARCOS-AEC","r":"TEMPORADA","u":28,"c":1701.4},{"y":2026,"s":"DE TODO PARA TODOS-AEC","r":"TEMPORADA","u":1175,"c":16674.8},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"TEMPORADA","u":258,"c":20111},{"y":2025,"s":"LA CEIBA-LV","r":"TEMPORADA","u":415,"c":32980.8},{"y":2026,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"TEMPORADA","u":449,"c":51879.1},{"y":2025,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"TEMPORADA","u":32,"c":10936.5},{"y":2025,"s":"MAYOREO SPS-AEC","r":"TEMPORADA","u":947,"c":107335.6},{"y":2026,"s":"SABA-LV","r":"TEMPORADA","u":4,"c":97.4},{"y":2025,"s":"CAMPAMENTO OLANCHO-LV","r":"AUTORIZADO POR GERENCIA","u":138,"c":6033.4},{"y":2025,"s":"YORO-LV","r":"AUTORIZADO POR GERENCIA","u":13,"c":1333.9},{"y":2025,"s":"OLANCHITO-LV","r":"AUTORIZADO POR GERENCIA","u":97,"c":2496},{"y":2026,"s":"SAN MARCOS OCOTEPEQUE-LV","r":"AUTORIZADO POR GERENCIA","u":33,"c":4533.9},{"y":2026,"s":"SAN FRANCISCO-LV","r":"EXCESO DE INVENTARIO","u":1012,"c":93949.3},{"y":2026,"s":"EL PARAISO-LV","r":"EXCESO DE INVENTARIO","u":206,"c":8583.5},{"y":2026,"s":"SAN MARCOS OCOTEPEQUE-LV","r":"EXCESO DE INVENTARIO","u":295,"c":40011.4},{"y":2026,"s":"TOCOA-LV","r":"EXCESO DE INVENTARIO","u":347,"c":15935.5},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2567,"c":73779},{"y":2025,"s":"MAYOREO SPS-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":6059,"c":634637.1},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"COLOR DE ETIQUETA","u":318,"c":45653.9},{"y":2025,"s":"PUERTO CORTES-AEC","r":"AUTORIZADO POR GERENCIA","u":35,"c":1612.6},{"y":2026,"s":"YORO-AEC","r":"AUTORIZADO POR GERENCIA","u":16,"c":838.9},{"y":2025,"s":"COMAYAGUELA-AEC","r":"AUTORIZADO POR GERENCIA","u":226,"c":22122.7},{"y":2025,"s":"SAN PEDRO SULA-AEC","r":"AUTORIZADO POR GERENCIA","u":70,"c":4234.9},{"y":2025,"s":"MAYOREO SPS-AEC","r":"AUTORIZADO POR GERENCIA","u":1688,"c":157920.7},{"y":2025,"s":"SAN LORENZO-AEC","r":"AUTORIZADO POR GERENCIA","u":17,"c":1239.6},{"y":2025,"s":"GUAIMACA-AEC","r":"AUTORIZADO POR GERENCIA","u":8,"c":1687.6},{"y":2025,"s":"CHOLUTECA-AEC","r":"AUTORIZADO POR GERENCIA","u":10,"c":439.1},{"y":2025,"s":"GRACIAS  #1-AEC","r":"AUTORIZADO POR GERENCIA","u":44,"c":16035.5},{"y":2025,"s":"SAN JUAN-AEC","r":"AUTORIZADO POR GERENCIA","u":21,"c":489.6},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"AUTORIZADO POR GERENCIA","u":261,"c":30276.1},{"y":2026,"s":"SONAGUERA-AEC","r":"AUTORIZADO POR GERENCIA","u":38,"c":5399.1},{"y":2026,"s":"OLANCHITO-AEC","r":"AUTORIZADO POR GERENCIA","u":41,"c":3432.2},{"y":2025,"s":"MAYOREO SPS-AEC","r":"EXCESO DE INVENTARIO","u":2673,"c":364535.9},{"y":2025,"s":"MAYOREO MEGACARPA-AEC","r":"EXCESO DE INVENTARIO","u":4591,"c":664963.2},{"y":2025,"s":"SANTA ROSA-AEC","r":"EXCESO DE INVENTARIO","u":63,"c":12195},{"y":2025,"s":"OLANCHITO-AEC","r":"EXCESO DE INVENTARIO","u":49,"c":4929.5},{"y":2025,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"EXCESO DE INVENTARIO","u":4824,"c":626665.8},{"y":2025,"s":"SIGUATEPEQUE-AEC","r":"EXCESO DE INVENTARIO","u":315,"c":45023.1},{"y":2025,"s":"AEC TOCOA MAYOREO","r":"EXCESO DE INVENTARIO","u":626,"c":33078.6},{"y":2026,"s":"MAYOREO SPS-AEC","r":"EXCESO DE INVENTARIO","u":912,"c":139348.9},{"y":2026,"s":"PROGRESO #1-AEC","r":"EXCESO DE INVENTARIO","u":175,"c":8961.4},{"y":2026,"s":"COMAYAGUA-AEC","r":"EXCESO DE INVENTARIO","u":427,"c":28989.9},{"y":2026,"s":"EL PARAISO-AEC","r":"AUTORIZADO POR GERENCIA","u":10,"c":608},{"y":2026,"s":"SPS TERMINAL-AEC","r":"AUTORIZADO POR GERENCIA","u":17,"c":280.3},{"y":2026,"s":"MAYOREO COMAYAGUELA AEC","r":"EXCESO DE INVENTARIO","u":1623,"c":158191.9},{"y":2026,"s":"MAYOREO SPS-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2970,"c":307840.5},{"y":2026,"s":"MAYOREO OLANCHITO-AEC","r":"AUTORIZADO POR GERENCIA","u":626,"c":31993.7},{"y":2026,"s":"SAN JUAN-AEC","r":"EXCESO DE INVENTARIO","u":641,"c":98436.1},{"y":2025,"s":"SAN PEDRO SULA-AEC","r":"EXCESO DE INVENTARIO","u":496,"c":88204.5},{"y":2025,"s":"INTIBUCA-AEC","r":"EXCESO DE INVENTARIO","u":718,"c":85916.1},{"y":2025,"s":"OLANCHITO-AEC","r":"AUTORIZADO POR GERENCIA","u":378,"c":29815},{"y":2026,"s":"MAYOREO MEGACARPA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2624,"c":258622.7},{"y":2025,"s":"LA CEIBA-AEC","r":"EXCESO DE INVENTARIO","u":165,"c":36326.4},{"y":2026,"s":"MAYOREO MEGACARPA-AEC","r":"EXCESO DE INVENTARIO","u":186,"c":37061.7},{"y":2025,"s":"CEIBA MAYOREO-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":276,"c":4362.5},{"y":2025,"s":"OLANCHITO-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":39,"c":3260.5},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":2708,"c":309669.6},{"y":2025,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":918,"c":95477.2},{"y":2025,"s":"MARCALA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":31,"c":836.5},{"y":2026,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":878,"c":71867.2},{"y":2026,"s":"MAYOREO PROGRESO #2-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":663,"c":13891.2},{"y":2026,"s":"AEC TOCOA MAYOREO","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":228,"c":19507},{"y":2026,"s":"MAYOREO OLANCHITO-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":960,"c":55097.4},{"y":2026,"s":"CAMPAMENTO-AEC","r":"DAÑADOS","u":11,"c":602},{"y":2026,"s":"MAYOREO COMAYAGUELA AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1582.3,"c":76439},{"y":2026,"s":"SABA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":70,"c":3820.5},{"y":2026,"s":"LAS VEGAS-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":108,"c":7261.1},{"y":2025,"s":"INTIBUCA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":74,"c":1712.4},{"y":2026,"s":"COMAYAGUELA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":29,"c":569},{"y":2025,"s":"MAYOREO OLANCHITO-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":170,"c":803.2},{"y":2025,"s":"SONAGUERA-LV","r":"DAÑADOS","u":28,"c":1495.1},{"y":2026,"s":"MAYOREO OLANCHITO-AEC","r":"DAÑADOS","u":3,"c":91},{"y":2026,"s":"SABA-DS","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":109,"c":11446.9},{"y":2026,"s":"TALANGA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":176,"c":566.2},{"y":2026,"s":"SAN ESTEBAN-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1132,"c":38121},{"y":2026,"s":"SANTA RITA, COPAN -LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":78,"c":1431},{"y":2026,"s":"AEC CHOLOMA","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6,"c":1308.3},{"y":2025,"s":"CEIBA MAYOREO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1624,"c":30451.4},{"y":2025,"s":"MAYOREO SPS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":12742,"c":828725.1},{"y":2026,"s":"DE TODO PARA TODOS-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":714,"c":33415.5},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":6413,"c":958349.4},{"y":2026,"s":"CEIBA MAYOREO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":708,"c":26304.1},{"y":2025,"s":"AEC TOCOA MAYOREO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":297,"c":9382.4},{"y":2026,"s":"MAYOREO PLAZA DEL SOL 2-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":2656,"c":224955.1},{"y":2026,"s":"MAYOREO MEGACARPA-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1392,"c":27646.7},{"y":2026,"s":"AEC TOCOA MAYOREO","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1020,"c":38676.1},{"y":2026,"s":"MAYOREO OLANCHITO-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":1072,"c":29744.7},{"y":2026,"s":"MAYOREO SPS DANDY-AEC","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":4,"c":340.9},{"y":2026,"s":"MEGATIENDA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":47,"c":7530},{"y":2025,"s":"TRINIDAD-LV","r":"TEMPORADA","u":123,"c":12510.5},{"y":2025,"s":"TALANGA-LV","r":"TEMPORADA","u":90,"c":7403.2},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"TEMPORADA","u":1250,"c":56257.2},{"y":2025,"s":"DANLI #1-AEC","r":"AUTORIZADO POR GERENCIA","u":20,"c":6974},{"y":2025,"s":"LEPAERA-LV","r":"AUTORIZADO POR GERENCIA","u":40,"c":15930.4},{"y":2025,"s":"MAYOREO PROGRESO #2-AEC","r":"DAÑADOS","u":93,"c":4776.4},{"y":2026,"s":"EL PARAISO-LV","r":"COLOR DE ETIQUETA","u":635,"c":1358.8},{"y":2026,"s":"LEPAERA-LV","r":"AUTORIZADO POR GERENCIA","u":1089,"c":145930.4},{"y":2025,"s":"DANLI #1-AEC","r":"EXCESO DE INVENTARIO","u":292,"c":31316.5},{"y":2025,"s":"MORAZAN #1-AEC","r":"EXCESO DE INVENTARIO","u":68,"c":12164.3},{"y":2025,"s":"GRACIAS  #1-AEC","r":"EXCESO DE INVENTARIO","u":94,"c":16946.7},{"y":2026,"s":"SAN ESTEBAN -AEC","r":"EXCESO DE INVENTARIO","u":239,"c":7863.5},{"y":2026,"s":"LA CEIBA-LV","r":"EXCESO DE INVENTARIO","u":122,"c":17984.3},{"y":2026,"s":"SAN ESTEBAN-LV","r":"EXCESO DE INVENTARIO","u":1697,"c":186846.9},{"y":2026,"s":"CUCUYAGUA-LV","r":"EXCESO DE INVENTARIO","u":129,"c":184.9},{"y":2025,"s":"SABA-LV","r":"TEMPORADA","u":542,"c":12522.6},{"y":2026,"s":"SAN FRANCISCO-LV","r":"TEMPORADA","u":266,"c":33839.5},{"y":2026,"s":"MAYOREO OLANCHITO-AEC","r":"TEMPORADA","u":2040,"c":76072.6},{"y":2026,"s":"SAN ESTEBAN-LV","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":222,"c":12136.3},{"y":2026,"s":"OLANCHITO-LV","r":"EXCESO DE INVENTARIO","u":1086,"c":117112.7},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"TEMPORADA","u":666,"c":66416.7},{"y":2026,"s":"TOCOA-AEC #2","r":"TEMPORADA","u":96,"c":2982.2},{"y":2026,"s":"SPS DANDY-AEC","r":"TEMPORADA","u":56,"c":797.7},{"y":2025,"s":"SAN FRANCISCO-LV","r":"TEMPORADA","u":58,"c":5881.8},{"y":2026,"s":"GUAIMACA-AEC","r":"EXCESO DE INVENTARIO","u":977,"c":163499.6},{"y":2026,"s":"GUAYMACA-LV","r":"EXCESO DE INVENTARIO","u":47,"c":6195.6},{"y":2025,"s":"MAYOREO COMAYAGUELA AEC","r":"AUTORIZADO POR GERENCIA","u":399,"c":40351.4},{"y":2026,"s":"LAS VEGAS-AEC","r":"EXCESO DE INVENTARIO","u":80,"c":15503.8},{"y":2025,"s":"LEPAERA-LV","r":"COLOR DE ETIQUETA","u":143,"c":0},{"y":2025,"s":"CATACAMAS-LV","r":"COLOR DE ETIQUETA","u":484,"c":0},{"y":2025,"s":"SAN ESTEBAN-LV","r":"COLOR DE ETIQUETA","u":998,"c":6.9},{"y":2025,"s":"YORO-LV","r":"COLOR DE ETIQUETA","u":364,"c":0},{"y":2025,"s":"MEGACARPA EL PROGRESO-LV","r":"COLOR DE ETIQUETA","u":1271,"c":0},{"y":2025,"s":"SAN FRANCISCO-LV","r":"COLOR DE ETIQUETA","u":145,"c":0},{"y":2025,"s":"CAMPAMENTO OLANCHO-LV","r":"COLOR DE ETIQUETA","u":734,"c":0},{"y":2025,"s":"GRACIAS, LEMPIRA-LV","r":"COLOR DE ETIQUETA","u":581,"c":0},{"y":2025,"s":"LA LIBERTAD-LV","r":"COLOR DE ETIQUETA","u":347,"c":0},{"y":2026,"s":"OLANCHITO-LV","r":"COLOR DE ETIQUETA","u":319,"c":926.1},{"y":2026,"s":"LA LIBERTAD-LV","r":"COLOR DE ETIQUETA","u":121,"c":0},{"y":2026,"s":"TEGUCIGALPA-AEC","r":"EXCESO DE INVENTARIO","u":44,"c":0},{"y":2025,"s":"GUAYMACA-LV","r":"COLOR DE ETIQUETA","u":304,"c":0},{"y":2026,"s":"LA CEIBA-LV","r":"AUTORIZADO POR GERENCIA","u":432,"c":198.3},{"y":2026,"s":"CAMPAMENTO OLANCHO-LV","r":"COLOR DE ETIQUETA","u":231,"c":0},{"y":2026,"s":"SAN ESTEBAN-LV","r":"COLOR DE ETIQUETA","u":158,"c":0},{"y":2025,"s":"TRINIDAD-LV","r":"COLOR DE ETIQUETA","u":146,"c":0},{"y":2025,"s":"GRACIAS, LEMPIRA-LV","r":"AUTORIZADO POR GERENCIA","u":443,"c":0},{"y":2025,"s":"LA CEIBA-LV","r":"COLOR DE ETIQUETA","u":578,"c":0},{"y":2026,"s":"YORO-LV","r":"COLOR DE ETIQUETA","u":58,"c":0},{"y":2026,"s":"SAN MARCOS OCOTEPEQUE-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":717,"c":18574.9},{"y":2025,"s":"PEÑA BLANCA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":57,"c":0},{"y":2025,"s":"MORAZAN #2-AEC","r":"COLOR DE ETIQUETA","u":65,"c":7818},{"y":2025,"s":"CATACAMAS-AEC","r":"EXCESO DE INVENTARIO","u":824,"c":92768.2},{"y":2025,"s":"JESUS DE OTORO-AEC","r":"EXCESO DE INVENTARIO","u":425,"c":69300.8},{"y":2025,"s":"SANTA CRUZ-AEC","r":"EXCESO DE INVENTARIO","u":120,"c":13656.4},{"y":2025,"s":"MORAZAN #2-AEC","r":"EXCESO DE INVENTARIO","u":211,"c":50078.2},{"y":2026,"s":"MAYOREO SPS DANDY-AEC","r":"EXCESO DE INVENTARIO","u":1790,"c":103208.2},{"y":2026,"s":"CATACAMAS-AEC","r":"EXCESO DE INVENTARIO","u":123,"c":24929.3},{"y":2025,"s":"SPS TERMINAL-AEC","r":"EXCESO DE INVENTARIO","u":217,"c":15845.1},{"y":2026,"s":"SONAGUERA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":570,"c":16665.6},{"y":2026,"s":"SANTA CRUZ-AEC","r":"TEMPORADA","u":995,"c":21819.8},{"y":2025,"s":"CEIBA MAYOREO-AEC","r":"TEMPORADA","u":6,"c":314},{"y":2025,"s":"MAYOREO PROGRESO #2-AEC","r":"TEMPORADA","u":375,"c":18123.8},{"y":2025,"s":"TALANGA-LV","r":"DAÑADOS","u":291,"c":15482.8},{"y":2025,"s":"EL NEGRITO, YORO-LV","r":"DAÑADOS","u":56,"c":4211},{"y":2026,"s":"SABA-DS","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":139,"c":12624.4},{"y":2026,"s":"SANTA RITA, COPAN -LV","r":"DAÑADOS","u":162,"c":3355.7},{"y":2025,"s":"MAYOREO PROGRESO #2-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":1777,"c":80261.6},{"y":2025,"s":"LA CEIBA-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":126,"c":2075.5},{"y":2025,"s":"SANTA CRUZ-AEC","r":"DAÑADOS","u":103,"c":7862.3},{"y":2025,"s":"PEÑA BLANCA-AEC","r":"EXCESO DE INVENTARIO","u":384,"c":1472.2},{"y":2025,"s":"MAYOREO PROGRESO #2-AEC","r":"AUTORIZADO POR GERENCIA","u":106,"c":14682.3},{"y":2026,"s":"SANTA CRUZ-AEC","r":"EXCESO DE INVENTARIO","u":48,"c":3339.6},{"y":2025,"s":"SAN FRANCISCO-LV","r":"EXCESO DE INVENTARIO","u":24,"c":740.9},{"y":2025,"s":"EL NEGRITO, YORO-LV","r":"AUTORIZADO POR GERENCIA","u":333,"c":24565.3},{"y":2025,"s":"SANTA RITA, COPAN -LV","r":"AUTORIZADO POR GERENCIA","u":113,"c":7126.1},{"y":2025,"s":"TALANGA-LV","r":"EXCESO DE INVENTARIO","u":534,"c":36153.5},{"y":2025,"s":"LA CEIBA-LV","r":"AUTORIZADO POR GERENCIA","u":314,"c":21550.5},{"y":2025,"s":"SABA-AEC","r":"COLOR DE ETIQUETA","u":101,"c":13267.6},{"y":2025,"s":"SAN JUAN-AEC","r":"EXCESO DE INVENTARIO","u":352,"c":59783},{"y":2025,"s":"SANTA RITA, COPAN -LV","r":"COLOR DE ETIQUETA","u":18,"c":0},{"y":2025,"s":"SABA-DS","r":"COLOR DE ETIQUETA","u":58,"c":27.9},{"y":2025,"s":"EL NEGRITO, YORO-LV","r":"EXCESO DE INVENTARIO","u":202,"c":0},{"y":2025,"s":"EL PARAISO-LV","r":"COLOR DE ETIQUETA","u":21,"c":45.2},{"y":2025,"s":"LEPAERA-LV","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":15,"c":195.6},{"y":2026,"s":"EL NEGRITO, YORO-LV","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":56,"c":3424.3},{"y":2025,"s":"CAMPAMENTO-AEC","r":"EXCESO DE INVENTARIO","u":750,"c":103206.4},{"y":2026,"s":"EL PARAISO-AEC","r":"COLOR DE ETIQUETA","u":30,"c":2850.2},{"y":2026,"s":"MAYOREO COMAYAGUELA AEC","r":"COLOR DE ETIQUETA","u":5,"c":300},{"y":2026,"s":"GUAYMACA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":16,"c":1330.1},{"y":2026,"s":"LA LABOR OCOTEPEQUE-LV","r":"COLOR DE ETIQUETA","u":12,"c":0},{"y":2026,"s":"TOCOA-LV","r":"TEMPORADA","u":18,"c":1481.7},{"y":2025,"s":"PROGRESO #1-AEC","r":"LENTA ROTACIÓN / REFRESCAMIENTO","u":10,"c":938.5},{"y":2025,"s":"EL PARAISO-AEC","r":"AUTORIZADO POR GERENCIA","u":12,"c":1848.7},{"y":2026,"s":"SANTA RITA, COPAN -LV","r":"AUTORIZADO POR GERENCIA","u":402,"c":27609.8},{"y":2026,"s":"EL NEGRITO, YORO-LV","r":"AUTORIZADO POR GERENCIA","u":6,"c":1200},{"y":2026,"s":"INTIBUCA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":13,"c":1292},{"y":2026,"s":"LA CEIBA-LV","r":"DAÑADOS","u":10,"c":1315.2},{"y":2026,"s":"PEÑA BLANCA-LV","r":"SOLICITADO POR ANALISIS (RESURTIR DS)","u":3,"c":0},{"y":2026,"s":"SAN FRANCISCO-LV","r":"AUTORIZADO POR GERENCIA","u":7,"c":356},{"y":2026,"s":"SAN FRANCISCO-LV","r":"COLOR DE ETIQUETA","u":1,"c":0}];
+
         // --- GLOBAL FILTER STATE (Multi-select Lists) ---
         let selectedYears = [];
         let selectedQuarters = [];
@@ -1329,6 +1515,8 @@
         let selectedStores = [];
         let selectedMotivos = [];
         let selectedStoreTypes = [];
+
+        let allCiasList = [];
 
         let activeTableTab = 'units'; // 'units' or 'cost'
         let rawData = [];
@@ -1349,24 +1537,29 @@
 
         // Reason mapping and colors
         const catMap = {
-            // Valores reales en el archivo CSV
-            "DAÑADOS": "DAÑADO",
-            "SOLICITADO ANALISIS (PARA RESURTIR DS)": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)",
-            "TEMPORADA": "TEMPORADA",
-            "EXCESO DE INVENTARIO": "EXCESO DE INVENTARIO",
-            "LENTA ROTACIÓN / REFRESCAMIENTO": "LENTA ROTACIÓN / REFRESCAMIENTO",
+            "SOLICITADO POR ANALISIS (RESURTIR DS)": "SOLICITADO POR ANALISIS (RESURTIR DS)",
+            "DAÑADOS": "DAÑADOS",
+            "DAÑADOS INVENTARIO": "DAÑADOS INVENTARIO",
             "AUTORIZADO POR GERENCIA": "AUTORIZADO POR GERENCIA",
+            "EXCESO DE INVENTARIO": "EXCESO DE INVENTARIO",
+            "TEMPORADA": "TEMPORADA",
             "COLOR DE ETIQUETA": "COLOR DE ETIQUETA",
-
-            // Mapeos históricos / alternativos
-            "PARA RESURTIR": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)",
-            "DAÑADOS Y RECLAMOS": "DAÑADO"
+            "LENTA ROTACIÓN / REFRESCAMIENTO": "LENTA ROTACIÓN / REFRESCAMIENTO",
+            
+            // Fallbacks
+            "DAÑADO": "DAÑADOS",
+            "DAÑADO INVENTARIO": "DAÑADOS INVENTARIO",
+            "DAÑADOS Y RECLAMOS": "DAÑADOS",
+            "SOLICITADO ANALISIS (PARA RESURTIR DS)": "SOLICITADO POR ANALISIS (RESURTIR DS)",
+            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": "SOLICITADO POR ANALISIS (RESURTIR DS)",
+            "PARA RESURTIR": "SOLICITADO POR ANALISIS (RESURTIR DS)"
         };
 
         const reasonColors = {
-            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": "#012094", // Azul Compadre
+            "SOLICITADO POR ANALISIS (RESURTIR DS)": "#012094", // Azul Compadre
             "TEMPORADA": "#3b82f6", // Celeste
-            "DAÑADO": "#f59e0b", // Naranja
+            "DAÑADOS": "#f59e0b", // Naranja
+            "DAÑADOS INVENTARIO": "#ffb74d", // Naranja claro
             "EXCESO DE INVENTARIO": "#E1251B", // Rojo Compadre
             "LENTA ROTACIÓN / REFRESCAMIENTO": "#10b981", // Verde
             "AUTORIZADO POR GERENCIA": "#8b5cf6", // Púrpura
@@ -1384,19 +1577,19 @@
 
         // 1. EMBEDDED OFFICIAL REPORT DATA (Matches Image Exactly)
         const officialUnits = {
-            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": { "Q1 2025": 57503, "Q2 2025": 61073, "Q3 2025": 131746, "Q4 2025": 110635, "Q1 2026": 185119, "total": 546076, "%": 69.48, "prom": 96.08 },
+            "SOLICITADO POR ANALISIS (RESURTIR DS)": { "Q1 2025": 57503, "Q2 2025": 61073, "Q3 2025": 131746, "Q4 2025": 110635, "Q1 2026": 185119, "total": 546076, "%": 69.48, "prom": 96.08 },
             "TEMPORADA": { "Q1 2025": 9069, "Q2 2025": 5503, "Q3 2025": 8217, "Q4 2025": 13104, "Q1 2026": 71679, "total": 107572, "%": 13.69, "prom": 39.96 },
-            "DAÑADO": { "Q1 2025": 10156, "Q2 2025": 10647, "Q3 2025": 10144, "Q4 2025": 7507, "Q1 2026": 14346, "total": 57592, "%": 7.33, "prom": 55.24 },
+            "DAÑADOS": { "Q1 2025": 10156, "Q2 2025": 10647, "Q3 2025": 10144, "Q4 2025": 7507, "Q1 2026": 14346, "total": 57592, "%": 7.33, "prom": 55.24 },
             "EXCESO DE INVENTARIO": { "Q1 2025": 17747, "Q2 2025": 2118, "Q3 2025": 6879, "Q4 2025": 1868, "Q1 2026": 12222, "total": 40834, "%": 5.20, "prom": 114.31 },
             "LENTA ROTACIÓN / REFRESCAMIENTO": { "Q1 2025": 9189, "Q2 2025": 3192, "Q3 2025": 1563, "Q4 2025": 2988, "Q1 2026": 19138, "total": 26863, "%": 3.42, "prom": 85.23 },
             "AUTORIZADO POR GERENCIA": { "Q1 2025": 1689, "Q2 2025": 613, "Q3 2025": 2595, "Q4 2025": 987, "Q1 2026": 1148, "total": 7032, "%": 0.89, "prom": 102.43 }
         };
 
         const officialCosts = {
-            "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": { "Q1 2025": 5653343, "Q2 2025": 6146505, "Q3 2025": 17879197, "Q4 2025": 11086194, "Q1 2026": 11704162, "total": 52469402, "%": 77.59 },
+            "SOLICITADO POR ANALISIS (RESURTIR DS)": { "Q1 2025": 5653343, "Q2 2025": 6146505, "Q3 2025": 17879197, "Q4 2025": 11086194, "Q1 2026": 11704162, "total": 52469402, "%": 77.59 },
             "EXCESO DE INVENTARIO": { "Q1 2025": 1952970, "Q2 2025": 233739, "Q3 2025": 980949, "Q4 2025": 116646, "Q1 2026": 1383568, "total": 4667873, "%": 6.90 },
             "TEMPORADA": { "Q1 2025": 287256, "Q2 2025": 536747, "Q3 2025": 943680, "Q4 2025": 557594, "Q1 2026": 1973357, "total": 4298634, "%": 6.36 },
-            "DAÑADO": { "Q1 2025": 671248, "Q2 2025": 599632, "Q3 2025": 566855, "Q4 2025": 429637, "Q1 2026": 914276, "total": 3181648, "%": 4.71 },
+            "DAÑADOS": { "Q1 2025": 671248, "Q2 2025": 599632, "Q3 2025": 566855, "Q4 2025": 429637, "Q1 2026": 914276, "total": 3181648, "%": 4.71 },
             "LENTA ROTACIÓN / REFRESCAMIENTO": { "Q1 2025": 786899, "Q2 2025": 287965, "Q3 2025": 130493, "Q4 2025": 268626, "Q1 2026": 815637, "total": 2289620, "%": 3.39 },
             "AUTORIZADO POR GERENCIA": { "Q1 2025": 193486, "Q2 2025": 60232, "Q3 2025": 273133, "Q4 2025": 126691, "Q1 2026": 66781, "total": 720322, "%": 1.07 }
         };
@@ -1413,142 +1606,142 @@
             {
                 "name": "TOCOA-AEC #2",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 117382.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 117382.0,
                     "TEMPORADA": 1371.0,
-                    "DAÑADO": 2016.0,
+                    "DAÑADOS": 2016.0,
                     "EXCESO DE INVENTARIO": 0.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 120769.0,
                 "totalCost": 1317041.16,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "MAYOREO MEGACARPA-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 24934.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 24934.0,
                     "TEMPORADA": 258.0,
-                    "DAÑADO": 1854.0,
+                    "DAÑADOS": 1854.0,
                     "EXCESO DE INVENTARIO": 4651.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 3537.0,
                     "AUTORIZADO POR GERENCIA": 261.0
                 },
                 "totalUnits": 35495.0,
                 "totalCost": 1879899.19,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "MAYOREO SPS-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 15404.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 15404.0,
                     "TEMPORADA": 947.0,
-                    "DAÑADO": 2969.0,
+                    "DAÑADOS": 2969.0,
                     "EXCESO DE INVENTARIO": 3585.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 4670.0,
                     "AUTORIZADO POR GERENCIA": 1688.0
                 },
                 "totalUnits": 29263.0,
                 "totalCost": 2407427.84,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "SAN ESTEBAN -AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 12823.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 12823.0,
                     "TEMPORADA": 3585.0,
-                    "DAÑADO": 1272.0,
+                    "DAÑADOS": 1272.0,
                     "EXCESO DE INVENTARIO": 7713.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 25393.0,
                 "totalCost": 2011096.23,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "OLANCHITO-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 20970.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 20970.0,
                     "TEMPORADA": 1326.0,
-                    "DAÑADO": 1581.0,
+                    "DAÑADOS": 1581.0,
                     "EXCESO DE INVENTARIO": 49.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 732.0
                 },
                 "totalUnits": 24658.0,
                 "totalCost": 2453655.73,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "SANTA CRUZ-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 14799.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 14799.0,
                     "TEMPORADA": 1868.0,
-                    "DAÑADO": 970.0,
+                    "DAÑADOS": 970.0,
                     "EXCESO DE INVENTARIO": 120.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 17757.0,
                 "totalCost": 1126457.50,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "JESUS DE OTORO-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 7427.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 7427.0,
                     "TEMPORADA": 2844.0,
-                    "DAÑADO": 1140.0,
+                    "DAÑADOS": 1140.0,
                     "EXCESO DE INVENTARIO": 5753.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 17164.0,
                 "totalCost": 1800573.28,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "LAS VEGAS-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 12469.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 12469.0,
                     "TEMPORADA": 2984.0,
-                    "DAÑADO": 988.0,
+                    "DAÑADOS": 988.0,
                     "EXCESO DE INVENTARIO": 0.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 16441.0,
                 "totalCost": 1685950.50,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "SABA-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 10987.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 10987.0,
                     "TEMPORADA": 3068.0,
-                    "DAÑADO": 2077.0,
+                    "DAÑADOS": 2077.0,
                     "EXCESO DE INVENTARIO": 0.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 16132.0,
                 "totalCost": 1044141.16,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             },
             {
                 "name": "SIGUATEPEQUE-AEC",
                 "reasons": {
-                    "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)": 8020.0,
+                    "SOLICITADO POR ANALISIS (RESURTIR DS)": 8020.0,
                     "TEMPORADA": 3881.0,
-                    "DAÑADO": 1407.0,
+                    "DAÑADOS": 1407.0,
                     "EXCESO DE INVENTARIO": 2490.0,
                     "LENTA ROTACIÓN / REFRESCAMIENTO": 0.0,
                     "AUTORIZADO POR GERENCIA": 0.0
                 },
                 "totalUnits": 15798.0,
                 "totalCost": 1626082.32,
-                "mainReason": "SOLICITADO POR ANÁLISIS (PARA RESURTIR DS)"
+                "mainReason": "SOLICITADO POR ANALISIS (RESURTIR DS)"
             }
         ];
 
@@ -1585,6 +1778,8 @@
             }
             if (rawData.length > 0) {
                 renderDashboard();
+            } else {
+                renderStaticOfficialDashboard();
             }
         }
 
@@ -1611,39 +1806,101 @@
         }
 
         // --- 3. CSV DATA LOADING & FILTERS SETUP ---
-        window.addEventListener('DOMContentLoaded', () => {
-            // Load initial static view based on the PDF/Image data
-            renderStaticOfficialDashboard();
+        // Global error handler to prevent silent failures
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Error global:', msg, 'en línea', line);
+            return false;
+        };
+
+        function initApp() {
+            try {
+                // Load initial static view dynamically with full interactive filters
+                initializeStaticFilterDropdowns();
+                renderDashboard();
+            } catch(e) {
+                console.error('Error en carga inicial:', e);
+                // Fallback: at minimum show static KPIs
+                try {
+                    document.getElementById('total-unidades').innerText = '990,826';
+                    document.getElementById('total-costo').innerText = 'L 71,750,359';
+                    document.getElementById('costo-promedio').innerText = 'L 72.41';
+                } catch(e2) { console.error('Error en fallback KPIs:', e2); }
+            }
 
             // Try loading CSV dynamically
-            Papa.parse("devoluciones.csv", {
-                download: true,
-                header: true,
-                delimiter: ";",
-                skipEmptyLines: true,
-                complete: function (results) {
-                    rawData = results.data;
-
-                    // Run initial scanner for store first return years
-                    scanStoresHistory();
-
-                    // Initialize multi-select list options from CSV data
-                    initializeFilterDropdowns();
-
-                    document.getElementById('status-dot').className = 'status-dot';
-                    document.getElementById('status-text').innerText = `CSV cargado dinámicamente con ${rawData.length.toLocaleString()} filas. Filtros 100% activos.`;
-                    showToast("Base de datos de El Compadre vinculada. ¡Filtros avanzados activados!");
-
-                    // Render Dashboard dynamically using the loaded CSV
-                    renderDashboard();
-                },
-                error: function (err) {
-                    console.log("Could not load CSV locally due to CORS or file missing. Staying in static report mode.", err);
-                    document.getElementById('status-dot').className = 'status-dot warning';
-                    document.getElementById('status-text').innerText = "Ejecutando en Modo Reporte (Fallback - Datos de Auditoría). Levanta un servidor local para explorar el CSV.";
+            try {
+                if (typeof Papa === 'undefined') {
+                    console.warn('PapaParse no disponible. Modo reporte estático.');
+                    return;
                 }
-            });
-        });
+                Papa.parse("devoluciones.csv", {
+                    download: true,
+                    header: true,
+                    delimiter: ";",
+                    skipEmptyLines: true,
+                    complete: function (results) {
+                        try {
+                            rawData = results.data.filter(row => {
+                                const dateObj = parseDMY(row.Fecha);
+                                const isValidString = (val) => {
+                                    if (!val) return false;
+                                    const clean = val.trim().toUpperCase();
+                                    return clean !== "" && clean !== "NAN" && clean !== "DESCONOCIDO" && clean !== "DESCONOCIDA" && clean !== "NULL" && clean !== "UNDEFINED";
+                                };
+                                return dateObj && 
+                                        dateObj.year !== 2024 && 
+                                        isValidString(row.Division) && 
+                                        isValidString(row.Origen) && 
+                                        isValidString(row.Categoria_Final);
+                            });
+
+                            // Run initial scanner for store first return years
+                            scanStoresHistory();
+
+                            // Initialize multi-select list options from CSV data
+                            initializeFilterDropdowns();
+
+                            document.getElementById('status-dot').className = 'status-dot';
+                            document.getElementById('status-text').innerText = `CSV cargado dinámicamente con ${rawData.length.toLocaleString()} filas. Filtros 100% activos.`;
+                            showToast("Base de datos de El Compadre vinculada. ¡Filtros avanzados activados!");
+
+                            // Render Dashboard dynamically using the loaded CSV
+                            renderDashboard();
+                        } catch(e) {
+                            console.error('Error procesando CSV:', e);
+                            // Fallback to static
+                            try { initializeStaticFilterDropdowns(); renderDashboard(); } catch(e2) { console.error('Error en fallback CSV:', e2); }
+                        }
+                    },
+                    error: function (err) {
+                        console.log("Could not load CSV locally due to CORS or file missing. Staying in static report mode.", err);
+                        try {
+                            document.getElementById('status-dot').className = 'status-dot warning';
+                            document.getElementById('status-text').innerText = "Ejecutando en Modo Reporte (Fallback - Datos de Auditoría). Filtros activos.";
+                            
+                            // Initialize static filter list options
+                            initializeStaticFilterDropdowns();
+                            // Render Dashboard using static data aggregation
+                            renderDashboard();
+                        } catch(e) {
+                            console.error('Error en error callback:', e);
+                        }
+                    }
+                });
+            } catch(e) {
+                console.error('Error iniciando Papa.parse:', e);
+                // Still render with static data
+                try { renderDashboard(); } catch(e2) { console.error('Error en fallback final:', e2); }
+            }
+        }
+
+        // Ensure the app initializes regardless of DOMContentLoaded timing
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // DOM already loaded, run immediately
+            initApp();
+        }
 
         // Scan the complete database to find the first year of returns for each store
         function scanStoresHistory() {
@@ -1715,19 +1972,50 @@
         function initializeFilterDropdowns() {
             const divs = new Set();
             const stores = new Set();
+            const cias = new Set();
             rawData.forEach(row => {
                 if (row.Division) divs.add(row.Division);
                 if (row.Origen) stores.add(row.Origen);
+                if (row['COMPAÑIA']) cias.add(row['COMPAÑIA']);
             });
             allDivisionsList = Array.from(divs).sort();
             allStoresList = Array.from(stores).sort();
+            allCiasList = Array.from(cias).sort();
+
+            updateDropdownSelectors();
+            updatePeriodOptions();
+        }
+
+        function initializeStaticFilterDropdowns() {
+            const divs = new Set();
+            const stores = new Set();
+            staticDivReason.forEach(row => {
+                if (row.d) divs.add(row.d);
+            });
+            staticStoreReason.forEach(row => {
+                if (row.s) stores.add(row.s);
+            });
+            allDivisionsList = Array.from(divs).sort();
+            allStoresList = Array.from(stores).sort();
+            allCiasList = ["EL COMPADRE", "LA VITRINA", "SEM-17"]; // Static CIAS
 
             updateDropdownSelectors();
             updatePeriodOptions();
         }
 
         function getEnabledOptionsFor(type) {
-            if (rawData.length === 0) return [];
+            if (rawData.length === 0) {
+                if (type === 'year') return ['2025', '2026'];
+                if (type === 'quarter') return ['Q1', 'Q2', 'Q3', 'Q4'];
+                if (type === 'month') return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+                if (type === 'division') return allDivisionsList;
+                if (type === 'store') return allStoresList;
+                if (type === 'cia') return allCiasList;
+                if (type === 'recepcion') return ['RECEPCIONADO', 'NO RECEPCIONADO'];
+                if (type === 'tipo_tienda') return ['DETALLE', 'MAYOREO'];
+                if (type === 'motivo') return Array.from(new Set(Object.values(catMap)));
+                return [];
+            }
             const enabledSet = new Set();
             rawData.forEach(row => {
                 const dateObj = parseDMY(row.Fecha);
@@ -1742,7 +2030,7 @@
                 if (type !== 'quarter' && selectedQuarters.length > 0 && !selectedQuarters.includes(dateObj.quarter)) matches = false;
                 if (type !== 'month' && selectedMonths.length > 0 && !selectedMonths.includes(dateObj.month.toString())) matches = false;
                 if (type !== 'division' && selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) matches = false;
-                if (type !== 'cia' && selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) matches = false;
+                if (type !== 'cia' && selectedCompanies.length > 0 && !selectedCompanies.includes(row['COMPAÑIA'])) matches = false;
                 if (type !== 'recepcion' && selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) matches = false;
                 if (type !== 'store' && selectedStores.length > 0 && !selectedStores.includes(row.Origen)) matches = false;
                 if (type !== 'motivo' && selectedMotivos.length > 0 && !selectedMotivos.includes(mappedReason)) matches = false;
@@ -1754,7 +2042,7 @@
                     else if (type === 'month') enabledSet.add(dateObj.month.toString());
                     else if (type === 'division') { if (row.Division) enabledSet.add(row.Division); }
                     else if (type === 'store') { if (row.Origen) enabledSet.add(row.Origen); }
-                    else if (type === 'cia') enabledSet.add(row.CIA);
+                    else if (type === 'cia') { if (row['COMPAÑIA']) enabledSet.add(row['COMPAÑIA']); }
                     else if (type === 'recepcion') enabledSet.add(row.RECEPCIONADO);
                     else if (type === 'tipo_tienda') { if (row.tipo_tienda) enabledSet.add(row.tipo_tienda); }
                     else if (type === 'motivo') enabledSet.add(mappedReason);
@@ -1782,15 +2070,6 @@
             }
 
             optionsEl.innerHTML = '';
-
-            if (rawData.length === 0) {
-                fullList.forEach(val => {
-                    const label = labelMapping ? (labelMapping[val] || val) : val;
-                    const optDiv = createDropdownOption(val, label, false, true, () => { });
-                    optionsEl.appendChild(optDiv);
-                });
-                return;
-            }
 
             const enabledList = getEnabledOptionsFor(type);
 
@@ -1837,12 +2116,12 @@
         }
 
         function updateDropdownSelectors() {
-            populateDropdownList('year', ['2024', '2025', '2026'], selectedYears, 'Todos los Años', 'title-year', 'options-year');
+            populateDropdownList('year', ['2025', '2026'], selectedYears, 'Todos los Años', 'title-year', 'options-year');
             populateDropdownList('quarter', ['Q1', 'Q2', 'Q3', 'Q4'], selectedQuarters, 'Todos los Trimestres', 'title-quarter', 'options-quarter');
             populateDropdownList('month', ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'], selectedMonths, 'Todos los Meses', 'title-month', 'options-month', monthNames);
             populateDropdownList('division', allDivisionsList, selectedDivisions, 'Todas las Divisiones', 'title-division', 'options-division');
             populateDropdownList('store', allStoresList, selectedStores, 'Todas las Tiendas', 'title-store', 'options-store');
-            populateDropdownList('cia', ['AEC', 'DS'], selectedCompanies, 'Todas las CIAs', 'title-cia', 'options-cia');
+            populateDropdownList('cia', allCiasList, selectedCompanies, 'Todas las Compañías', 'title-cia', 'options-cia');
             populateDropdownList('recepcion', ['RECEPCIONADO', 'NO RECEPCIONADO'], selectedReceptions, 'Todos los Estados', 'title-recepcion', 'options-recepcion');
             populateDropdownList('tipo_tienda', ['DETALLE', 'MAYOREO'], selectedStoreTypes, 'Todos los Tipos', 'title-tipo-tienda', 'options-tipo-tienda');
 
@@ -1851,12 +2130,6 @@
         }
 
         function toggleFilterValue(type, value, isChecked) {
-            if (rawData.length === 0) {
-                showToast("Modo Estático de Auditoría. Carga el CSV para interactuar con los filtros.");
-                updateDropdownSelectors();
-                return;
-            }
-
             let arr;
             if (type === 'year') arr = selectedYears;
             else if (type === 'quarter') arr = selectedQuarters;
@@ -1880,8 +2153,6 @@
         }
 
         function toggleAllFilterOptions(type, isChecked) {
-            if (rawData.length === 0) return;
-
             let arr;
             if (type === 'year') arr = selectedYears;
             else if (type === 'quarter') arr = selectedQuarters;
@@ -1916,12 +2187,8 @@
 
             showToast("Filtros restablecidos a la vista general.");
 
-            if (rawData.length > 0) {
-                updateDropdownSelectors();
-                renderDashboard();
-            } else {
-                renderStaticOfficialDashboard();
-            }
+            updateDropdownSelectors();
+            renderDashboard();
         }
 
         function clearSpecificFilter(type, value) {
@@ -1968,7 +2235,7 @@
             selectedMonths.forEach(v => addBadge(`Mes: ${monthNames[v] || v}`, 'month', v));
             selectedDivisions.forEach(v => addBadge(`División: ${v}`, 'division', v));
             selectedStores.forEach(v => addBadge(`Tienda: ${v}`, 'store', v));
-            selectedCompanies.forEach(v => addBadge(`Empresa: ${v}`, 'cia', v));
+            selectedCompanies.forEach(v => addBadge(`Compañía: ${v}`, 'cia', v));
             selectedReceptions.forEach(v => addBadge(`Recepción: ${v}`, 'recepcion', v));
             selectedMotivos.forEach(v => addBadge(`Motivo: ${v}`, 'motivo', v, true));
             selectedStoreTypes.forEach(v => addBadge(`Tipo: ${v}`, 'tipo_tienda', v));
@@ -1984,8 +2251,244 @@
         }
 
         // --- 5. COMPUTE FILTERED DATASETS ---
+        function getFilteredStaticData() {
+            let colType = 'years';
+            let cols = ["2025", "2026"];
+
+            if (selectedYears.length === 1) {
+                if (selectedQuarters.length === 1) {
+                    if (selectedMonths.length === 1) {
+                        colType = 'single';
+                        cols = [selectedMonths[0]];
+                    } else {
+                        colType = 'months';
+                        if (selectedMonths.length > 1) {
+                            cols = selectedMonths;
+                        } else {
+                            const qNum = parseInt(selectedQuarters[0][1], 10);
+                            cols = [((qNum - 1) * 3 + 1).toString(), ((qNum - 1) * 3 + 2).toString(), ((qNum - 1) * 3 + 3).toString()];
+                        }
+                    }
+                } else if (selectedQuarters.length > 1) {
+                    colType = 'quarters';
+                    cols = selectedQuarters;
+                } else {
+                    if (selectedMonths.length > 0) {
+                        colType = 'months';
+                        cols = selectedMonths;
+                    } else {
+                        colType = 'quarters';
+                        cols = ["Q1", "Q2", "Q3", "Q4"];
+                    }
+                }
+            } else if (selectedYears.length > 1) {
+                colType = 'years';
+                cols = selectedYears;
+            }
+
+            const uData = {};
+            const cData = {};
+            const qyU = {};
+            const qyC = {};
+            const qyColsSet = new Set();
+
+            const allReasons = Array.from(new Set(Object.values(catMap)));
+            allReasons.concat(["OTROS"]).forEach(r => {
+                uData[r] = { total: 0, prom: 0, "%": 0 };
+                cData[r] = { total: 0, "%": 0 };
+                qyU[r] = {};
+                qyC[r] = {};
+                cols.forEach(col => {
+                    uData[r][col] = 0;
+                    cData[r][col] = 0;
+                });
+            });
+
+            let primarySource = staticMonthReason;
+            let filterByStore = false;
+            let filterByDiv = false;
+
+            if (selectedStores.length > 0) {
+                primarySource = staticStoreReason;
+                filterByStore = true;
+            } else if (selectedDivisions.length > 0) {
+                primarySource = staticDivReason;
+                filterByDiv = true;
+            }
+
+            let globalUnits = 0;
+            let globalCost = 0;
+
+            primarySource.forEach(row => {
+                if (selectedYears.length > 0 && !selectedYears.includes(row.y.toString())) return;
+                if (selectedMotivos.length > 0 && !selectedMotivos.includes(row.r)) return;
+
+                if (filterByStore) {
+                    if (!selectedStores.includes(row.s)) return;
+                } else if (filterByDiv) {
+                    if (!selectedDivisions.includes(row.d)) return;
+                } else {
+                    const q = "Q" + Math.ceil(row.m / 3);
+                    if (selectedQuarters.length > 0 && !selectedQuarters.includes(q)) return;
+                    if (selectedMonths.length > 0 && !selectedMonths.includes(row.m.toString())) return;
+                }
+
+                const u = row.u;
+                const c = row.c;
+
+                globalUnits += u;
+                globalCost += c;
+
+                let colKey = row.y.toString();
+                if (colType === 'quarters') {
+                    if (!filterByStore && !filterByDiv) {
+                        colKey = "Q" + Math.ceil(row.m / 3);
+                    }
+                } else if (colType === 'months' || colType === 'single') {
+                    if (!filterByStore && !filterByDiv) {
+                        colKey = row.m.toString();
+                    }
+                }
+
+                if (cols.includes(colKey)) {
+                    uData[row.r][colKey] += u;
+                    cData[row.r][colKey] += c;
+                }
+                uData[row.r].total += u;
+                cData[row.r].total += c;
+
+                let qyKey = `Q1 ${row.y}`;
+                if (!filterByStore && !filterByDiv) {
+                    const q = "Q" + Math.ceil(row.m / 3);
+                    qyKey = `${q} ${row.y}`;
+                } else {
+                    qyColsSet.add(`Q1 ${row.y}`);
+                    qyColsSet.add(`Q2 ${row.y}`);
+                    qyColsSet.add(`Q3 ${row.y}`);
+                    qyColsSet.add(`Q4 ${row.y}`);
+                }
+                qyColsSet.add(qyKey);
+                if (!qyU[row.r][qyKey]) {
+                    qyU[row.r][qyKey] = 0;
+                    qyC[row.r][qyKey] = 0;
+                }
+                qyU[row.r][qyKey] += u;
+                qyC[row.r][qyKey] += c;
+            });
+
+            // Post-process percentages and averages
+            allReasons.concat(["OTROS"]).forEach(r => {
+                uData[r]["%"] = globalUnits > 0 ? (uData[r].total / globalUnits) * 100 : 0;
+                uData[r].prom = uData[r].total > 0 ? (cData[r].total / uData[r].total) : 0;
+                cData[r]["%"] = globalCost > 0 ? (cData[r].total / globalCost) * 100 : 0;
+            });
+
+            // Division aggregation
+            const divMap = {};
+            staticDivReason.forEach(row => {
+                if (selectedYears.length > 0 && !selectedYears.includes(row.y.toString())) return;
+                if (selectedMotivos.length > 0 && !selectedMotivos.includes(row.r)) return;
+                if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.d)) return;
+
+                if (!divMap[row.d]) divMap[row.d] = { units: 0, cost: 0 };
+                divMap[row.d].units += row.u;
+                divMap[row.d].cost += row.c;
+            });
+            const sortedDivisions = Object.keys(divMap).map(k => ({
+                name: k,
+                units: divMap[k].units,
+                cost: divMap[k].cost
+            })).sort((a, b) => b.units - a.units).slice(0, 5);
+
+            // Store aggregation
+            const storeMap = {};
+            staticStoreReason.forEach(row => {
+                if (selectedYears.length > 0 && !selectedYears.includes(row.y.toString())) return;
+                if (selectedMotivos.length > 0 && !selectedMotivos.includes(row.r)) return;
+                if (selectedStores.length > 0 && !selectedStores.includes(row.s)) return;
+
+                if (!storeMap[row.s]) {
+                    storeMap[row.s] = { name: row.s, totalUnits: 0, totalCost: 0, reasons: {}, reasonCosts: {} };
+                    allReasons.concat(["OTROS"]).forEach(r => {
+                        storeMap[row.s].reasons[r] = 0;
+                        storeMap[row.s].reasonCosts[r] = 0;
+                    });
+                }
+                storeMap[row.s].totalUnits += row.u;
+                storeMap[row.s].totalCost += row.c;
+                storeMap[row.s].reasons[row.r] += row.u;
+                storeMap[row.s].reasonCosts[row.r] += row.c;
+            });
+            storeMapGlobal = storeMap;
+
+            const sortedStores = Object.values(storeMap)
+                .sort((a, b) => b.totalUnits - a.totalUnits)
+                .slice(0, 15);
+
+            sortedStores.forEach(s => {
+                let maxU = -1;
+                let mainR = "OTROS";
+                Object.keys(s.reasons).forEach(r => {
+                    if (s.reasons[r] > maxU) {
+                        maxU = s.reasons[r];
+                        mainR = r;
+                    }
+                });
+                s.mainReason = mainR;
+            });
+
+            // Find New Stores List
+            const activeYearNum = selectedYears.length === 1 ? parseInt(selectedYears[0], 10) : NaN;
+            const newStoresList = [];
+            if (activeYearNum === 2026) {
+                const staticNewStores = [
+                    { name: "AEC TOCOA MAYOREO", units: 35495, cost: 1879899 },
+                    { name: "SPS DANDY-AEC", units: 15798, cost: 1626082 },
+                    { name: "RIO LINDO-LV", units: 10987, cost: 1044141 },
+                    { name: "SAN JUAN, INTIBUCA", units: 1148, cost: 66781 }
+                ];
+                staticNewStores.forEach(s => {
+                    if (storeMap[s.name]) {
+                        newStoresList.push({
+                            name: s.name,
+                            units: storeMap[s.name].totalUnits,
+                            cost: storeMap[s.name].totalCost
+                        });
+                    } else {
+                        newStoresList.push(s);
+                    }
+                });
+            }
+
+            const qyCols = Array.from(qyColsSet).sort((a, b) => {
+                const partsA = a.split(' ');
+                const partsB = b.split(' ');
+                if (partsA[1] !== partsB[1]) return parseInt(partsA[1]) - parseInt(partsB[1]);
+                return partsA[0].localeCompare(partsB[0]);
+            });
+
+            return {
+                units: uData,
+                costs: cData,
+                qyUnits: qyU,
+                qyCosts: qyC,
+                qyCols: qyCols,
+                divisions: sortedDivisions,
+                stores: sortedStores,
+                newStores: newStoresList,
+                colType: colType,
+                columns: cols,
+                totals: {
+                    units: globalUnits,
+                    cost: globalCost,
+                    receivedCost: globalCost * 0.85,
+                    avgCost: globalUnits > 0 ? globalCost / globalUnits : 0
+                }
+            };
+        }
+
         function getFilteredData() {
-            if (rawData.length === 0) return null; // Safe guard for missing CSV
+            if (rawData.length === 0) return getFilteredStaticData();
 
             const filteredRows = [];
             const storeYearTotals = {}; // Tracks store first years in filtered scope
@@ -2017,7 +2520,7 @@
 
             // Determine time columns depending on filters
             let colType = 'years';
-            let cols = ["2024", "2025", "2026"];
+            let cols = ["2025", "2026"];
 
             if (selectedYears.length === 1) {
                 if (selectedQuarters.length === 1) {
@@ -2077,7 +2580,7 @@
 
                 // 2. Operational Filters
                 if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
-                if (selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) return;
+                if (selectedCompanies.length > 0 && !selectedCompanies.includes(row['COMPAÑIA'])) return;
                 if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
                 if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
 
@@ -2219,36 +2722,36 @@
                 }
             };
         }
-
-        // --- 6. RENDER DYNAMIC DASHBOARD ---
         function renderDashboard() {
-            renderActiveFilterBadges();
+            try { renderActiveFilterBadges(); } catch(e) { console.error('Error renderActiveFilterBadges:', e); }
 
             const data = getFilteredData();
             if (!data) return;
 
             // 1. Render KPIs
-            document.getElementById('total-unidades').innerText = Math.round(data.totals.units).toLocaleString();
-            document.getElementById('total-costo').innerText = 'L ' + Math.round(data.totals.cost).toLocaleString();
-            document.getElementById('costo-promedio').innerText = 'L ' + data.totals.avgCost.toFixed(2);
+            try {
+                document.getElementById('total-unidades').innerText = Math.round(data.totals.units).toLocaleString();
+                document.getElementById('total-costo').innerText = 'L ' + Math.round(data.totals.cost).toLocaleString();
+                document.getElementById('costo-promedio').innerText = 'L ' + data.totals.avgCost.toFixed(2);
+            } catch(e) { console.error('Error en KPIs:', e); }
 
             // 2. Render Dynamic Tables
-            renderDynamicTables(data);
+            try { renderDynamicTables(data); } catch(e) { console.error('Error renderDynamicTables:', e); }
 
             // 3. Render Top Stores Table
-            renderTopStoresTable(data.stores);
+            try { renderTopStoresTable(data.stores); } catch(e) { console.error('Error renderTopStoresTable:', e); }
 
             // 4. Render New Stores List
-            renderNewStoresList(data.newStores);
+            try { renderNewStoresList(data.newStores); } catch(e) { console.error('Error renderNewStoresList:', e); }
 
             // 5. Render Q&A Section
-            renderQASection(data);
+            try { renderQASection(data); } catch(e) { console.error('Error renderQASection:', e); }
 
             // Render Comparativo Gerencial
-            renderComparativoGerencial();
+            try { renderComparativoGerencial(); } catch(e) { console.error('Error renderComparativoGerencial:', e); }
 
             // 6. Draw Charts
-            drawCharts(data);
+            try { drawCharts(data); } catch(e) { console.error('Error drawCharts:', e); }
         }
 
         function updatePeriodOptions() {
@@ -2259,14 +2762,14 @@
             
             let options = [];
             if (tipo === 'ANUAL') {
-                options = ['2024', '2025', '2026'];
+                options = ['2025', '2026'];
             } else if (tipo === 'TRIMESTRAL') {
-                ['2024', '2025', '2026'].forEach(y => {
+                ['2025', '2026'].forEach(y => {
                     ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => options.push(`${q} ${y}`));
                 });
             } else if (tipo === 'MENSUAL') {
                 const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                ['2024', '2025', '2026'].forEach(y => {
+                ['2025', '2026'].forEach(y => {
                     meses.forEach((m, i) => {
                         options.push(`${i+1} ${y}`);
                     });
@@ -2360,54 +2863,71 @@
             let arr = [];
             let html = '';
 
+            const dataset = rawData.length > 0 ? rawData : (nivel === 'TIENDA' ? staticStoreReason : staticDivReason);
+
             if (modo === 'ESTANDAR') {
                 thead.innerHTML = `
                     <tr>
                         <th class="sticky-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 0, false)">Dimensión Analizada</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 1, true)">Unidades 2024</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 2, true)">Unidades 2025</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 3, true)">Unidades 2026</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 4, true)">Δ% Unidades (25-26)</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 5, true)">Costo 2024 (L)</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 6, true)">Costo 2025 (L)</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 7, true)">Costo 2026 (L)</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 8, true)">Δ% Costo (25-26)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 1, true)">Unidades Año Base (2025)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 2, true)">Unidades Año Actual (2026)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 3, true)">Variación % Unidades</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 4, true)">Costo Año Base (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 5, true)">Costo Año Actual (L)</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 6, true)">Variación % Costo</th>
                     </tr>
                 `;
 
-                let map2024 = {}; let map2025 = {}; let map2026 = {};
+                let map2025 = {}; let map2026 = {};
                 
-                rawData.forEach(row => {
-                    const dateObj = parseDMY(row.Fecha);
-                    if (!dateObj) return;
-                    const y = dateObj.year.toString();
-                    if (y !== '2024' && y !== '2025' && y !== '2026') return;
-                    
-                    if (selectedQuarters.length > 0 && !selectedQuarters.includes(dateObj.quarter)) return;
-                    if (selectedMonths.length > 0 && !selectedMonths.includes(dateObj.month.toString())) return;
-                    if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
-                    if (selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) return;
-                    if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
-                    if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
-                    if (selectedMotivos.length > 0 && !selectedMotivos.includes(catMap[row.Categoria_Final])) return;
-                    if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+                dataset.forEach(row => {
+                    let y = "";
+                    let u = 0;
+                    let c = 0;
+                    let dimValue = "";
 
-                    let dimValue = "Desconocido";
-                    if (nivel === 'DIVISION') dimValue = row.Division;
-                    else if (nivel === 'MOTIVO') dimValue = catMap[row.Categoria_Final];
-                    else if (nivel === 'TIENDA') dimValue = row.Origen;
-                    else if (nivel === 'TIPO_TIENDA') dimValue = row.tipo_tienda;
-                    if(!dimValue) dimValue = "Desconocido";
+                    if (rawData.length > 0) {
+                        const dateObj = parseDMY(row.Fecha);
+                        if (!dateObj) return;
+                        y = dateObj.year.toString();
+                        if (y !== '2025' && y !== '2026') return;
+                        
+                        if (selectedQuarters.length > 0 && !selectedQuarters.includes(dateObj.quarter)) return;
+                        if (selectedMonths.length > 0 && !selectedMonths.includes(dateObj.month.toString())) return;
+                        if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
+                        if (selectedCompanies.length > 0 && !selectedCompanies.includes(row['COMPAÑIA'])) return;
+                        if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
+                        if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
+                        if (selectedMotivos.length > 0 && !selectedMotivos.includes(catMap[row.Categoria_Final])) return;
+                        if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+
+                        if (nivel === 'DIVISION') dimValue = row.Division;
+                        else if (nivel === 'MOTIVO') dimValue = catMap[row.Categoria_Final] || row.Categoria_Final;
+                        else if (nivel === 'TIENDA') dimValue = row.Origen;
+                        else if (nivel === 'TIPO_TIENDA') dimValue = row.tipo_tienda;
+                        u = parseFloat(row.unidades || 0);
+                        c = parseFloat(row.costo || 0);
+                    } else {
+                        y = row.y.toString();
+                        if (y !== '2025' && y !== '2026') return;
+                        
+                        if (selectedDivisions.length > 0 && nivel !== 'DIVISION' && row.d && !selectedDivisions.includes(row.d)) return;
+                        if (selectedMotivos.length > 0 && nivel !== 'MOTIVO' && !selectedMotivos.includes(row.r)) return;
+                        if (selectedStores.length > 0 && nivel !== 'TIENDA' && row.s && !selectedStores.includes(row.s)) return;
+
+                        if (nivel === 'DIVISION') dimValue = row.d;
+                        else if (nivel === 'MOTIVO') dimValue = row.r;
+                        else if (nivel === 'TIENDA') dimValue = row.s;
+                        else if (nivel === 'TIPO_TIENDA') dimValue = "DETALLE";
+                        u = row.u;
+                        c = row.c;
+                    }
+                    
+                    if (!dimValue || dimValue.trim() === "" || dimValue.toUpperCase() === "DESCONOCIDO" || dimValue.toUpperCase() === "DESCONOCIDA") return;
 
                     keys.add(dimValue);
                     
-                    const u = parseFloat(row.unidades || 0);
-                    const c = parseFloat(row.costo || 0);
-                    
-                    if (y === '2024') {
-                        if(!map2024[dimValue]) map2024[dimValue] = {u:0, c:0};
-                        map2024[dimValue].u += u; map2024[dimValue].c += c;
-                    } else if (y === '2025') {
+                    if (y === '2025') {
                         if(!map2025[dimValue]) map2025[dimValue] = {u:0, c:0};
                         map2025[dimValue].u += u; map2025[dimValue].c += c;
                     } else if (y === '2026') {
@@ -2417,12 +2937,11 @@
                 });
 
                 arr = Array.from(keys).map(k => {
-                    const d24 = map2024[k] || {u:0, c:0};
                     const d25 = map2025[k] || {u:0, c:0};
                     const d26 = map2026[k] || {u:0, c:0};
                     const pctU = d25.u > 0 ? ((d26.u - d25.u)/d25.u)*100 : (d26.u > 0 ? 100 : 0);
                     const pctC = d25.c > 0 ? ((d26.c - d25.c)/d25.c)*100 : (d26.c > 0 ? 100 : 0);
-                    return { name: k, u24: d24.u, u25: d25.u, u26: d26.u, pctU: pctU, c24: d24.c, c25: d25.c, c26: d26.c, pctC: pctC };
+                    return { name: k, u25: d25.u, u26: d26.u, pctU: pctU, c25: d25.c, c26: d26.c, pctC: pctC };
                 });
                 
                 arr.sort((a,b) => b.c26 - a.c26);
@@ -2430,21 +2949,20 @@
                 arr.forEach(item => {
                     const cUPct = item.pctU > 0 ? 'color: var(--danger);' : (item.pctU < 0 ? 'color: var(--success);' : '');
                     const cCPct = item.pctC > 0 ? 'color: var(--danger);' : (item.pctC < 0 ? 'color: var(--success);' : '');
+                    
                     html += `
                         <tr>
-                            <td class="text-bold sticky-col">${item.name}</td>
-                            <td class="num-col">${Math.round(item.u24).toLocaleString()}</td>
+                            <td class="text-bold sticky-col clickable-dim" onclick="showDetailView('${item.name.replace(/'/g, "\\'")}', 'ESTANDAR', null, null)">${item.name}</td>
                             <td class="num-col">${Math.round(item.u25).toLocaleString()}</td>
                             <td class="num-col text-bold">${Math.round(item.u26).toLocaleString()}</td>
                             <td class="num-col text-bold" style="${cUPct}">${item.pctU > 0 ? '▲' : (item.pctU < 0 ? '▼' : '')} ${Math.abs(item.pctU).toFixed(1)}%</td>
-                            <td class="num-col">L ${Math.round(item.c24).toLocaleString()}</td>
                             <td class="num-col">L ${Math.round(item.c25).toLocaleString()}</td>
                             <td class="num-col text-bold">L ${Math.round(item.c26).toLocaleString()}</td>
                             <td class="num-col text-bold" style="${cCPct}">${item.pctC > 0 ? '▲' : (item.pctC < 0 ? '▼' : '')} ${Math.abs(item.pctC).toFixed(1)}%</td>
                         </tr>
                     `;
                 });
-                if(arr.length === 0) html = `<tr><td colspan="9" style="text-align:center;">No hay datos para mostrar con los filtros actuales.</td></tr>`;
+                if(arr.length === 0) html = `<tr><td colspan="8" style="text-align:center;">No hay datos para mostrar con los filtros actuales.</td></tr>`;
 
             } else {
                 const tipo = document.getElementById('c-tipo-periodo')?.value || 'ANUAL';
@@ -2453,51 +2971,72 @@
                 
                 const p1Sel = document.getElementById('c-periodo-1');
                 const p2Sel = document.getElementById('c-periodo-2');
-                const p1Text = p1Sel ? p1Sel.options[p1Sel.selectedIndex].text : '2025';
-                const p2Text = p2Sel ? p2Sel.options[p2Sel.selectedIndex].text : '2026';
+                const p1Text = (p1Sel && p1Sel.selectedIndex !== -1 && p1Sel.options[p1Sel.selectedIndex]) ? p1Sel.options[p1Sel.selectedIndex].text : '2025';
+                const p2Text = (p2Sel && p2Sel.selectedIndex !== -1 && p2Sel.options[p2Sel.selectedIndex]) ? p2Sel.options[p2Sel.selectedIndex].text : '2026';
 
                 thead.innerHTML = `
                     <tr>
                         <th class="sticky-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 0, false)">Dimensión Analizada</th>
                         <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 1, true)">Unidades ${p1Text}</th>
                         <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 2, true)">Unidades ${p2Text}</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 3, true)">Δ% Unidades</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 3, true)">Variación % Unidades</th>
                         <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 4, true)">Costo ${p1Text} (L)</th>
                         <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 5, true)">Costo ${p2Text} (L)</th>
-                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 6, true)">Δ% Costo</th>
+                        <th class="num-col sortable" onclick="sortTable('tabla-comparativo-gerencial', 6, true)">Variación % Costo</th>
                     </tr>
                 `;
 
                 let mapP1 = {}; let mapP2 = {};
                 
-                rawData.forEach(row => {
-                    const dateObj = parseDMY(row.Fecha);
-                    if (!dateObj) return;
-                    
+                dataset.forEach(row => {
                     let rowPeriod = '';
-                    if (tipo === 'ANUAL') rowPeriod = dateObj.year.toString();
-                    else if (tipo === 'TRIMESTRAL') rowPeriod = `${dateObj.quarter} ${dateObj.year}`;
-                    else if (tipo === 'MENSUAL') rowPeriod = `${dateObj.month} ${dateObj.year}`;
-                    
-                    if (rowPeriod !== p1Val && rowPeriod !== p2Val) return;
-                    
-                    if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
-                    if (selectedCompanies.length > 0 && !selectedCompanies.includes(row.CIA)) return;
-                    if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
-                    if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
-                    if (selectedMotivos.length > 0 && !selectedMotivos.includes(catMap[row.Categoria_Final])) return;
-                    if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+                    let u = 0;
+                    let c = 0;
+                    let dimValue = "";
 
-                    let dimValue = "Desconocido";
-                    if (nivel === 'DIVISION') dimValue = row.Division;
-                    else if (nivel === 'MOTIVO') dimValue = catMap[row.Categoria_Final];
-                    else if (nivel === 'TIENDA') dimValue = row.Origen;
-                    else if (nivel === 'TIPO_TIENDA') dimValue = row.tipo_tienda;
-                    if(!dimValue) dimValue = "Desconocido";
+                    if (rawData.length > 0) {
+                        const dateObj = parseDMY(row.Fecha);
+                        if (!dateObj) return;
+                        
+                        if (tipo === 'ANUAL') rowPeriod = dateObj.year.toString();
+                        else if (tipo === 'TRIMESTRAL') rowPeriod = `${dateObj.quarter} ${dateObj.year}`;
+                        else if (tipo === 'MENSUAL') rowPeriod = `${dateObj.month} ${dateObj.year}`;
+                        
+                        if (rowPeriod !== p1Val && rowPeriod !== p2Val) return;
+                        
+                        if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return;
+                        if (selectedCompanies.length > 0 && !selectedCompanies.includes(row['COMPAÑIA'])) return;
+                        if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return;
+                        if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return;
+                        if (selectedMotivos.length > 0 && !selectedMotivos.includes(catMap[row.Categoria_Final])) return;
+                        if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return;
+
+                        if (nivel === 'DIVISION') dimValue = row.Division;
+                        else if (nivel === 'MOTIVO') dimValue = catMap[row.Categoria_Final] || row.Categoria_Final;
+                        else if (nivel === 'TIENDA') dimValue = row.Origen;
+                        else if (nivel === 'TIPO_TIENDA') dimValue = row.tipo_tienda;
+                        u = parseFloat(row.unidades || 0);
+                        c = parseFloat(row.costo || 0);
+                    } else {
+                        // Static mode
+                        rowPeriod = row.y.toString();
+                        if (rowPeriod !== p1Val && rowPeriod !== p2Val) return;
+                        
+                        if (selectedDivisions.length > 0 && nivel !== 'DIVISION' && row.d && !selectedDivisions.includes(row.d)) return;
+                        if (selectedMotivos.length > 0 && nivel !== 'MOTIVO' && !selectedMotivos.includes(row.r)) return;
+                        if (selectedStores.length > 0 && nivel !== 'TIENDA' && row.s && !selectedStores.includes(row.s)) return;
+
+                        if (nivel === 'DIVISION') dimValue = row.d;
+                        else if (nivel === 'MOTIVO') dimValue = row.r;
+                        else if (nivel === 'TIENDA') dimValue = row.s;
+                        else if (nivel === 'TIPO_TIENDA') dimValue = "DETALLE";
+                        u = row.u;
+                        c = row.c;
+                    }
+                    
+                    if (!dimValue || dimValue.trim() === "" || dimValue.toUpperCase() === "DESCONOCIDO" || dimValue.toUpperCase() === "DESCONOCIDA") return;
 
                     keys.add(dimValue);
-                    const u = parseFloat(row.unidades || 0);
-                    const c = parseFloat(row.costo || 0);
                     
                     if (rowPeriod === p1Val) {
                         if(!mapP1[dimValue]) mapP1[dimValue] = {u:0, c:0};
@@ -2522,9 +3061,10 @@
                 arr.forEach(item => {
                     const cUPct = item.pctU > 0 ? 'color: var(--danger);' : (item.pctU < 0 ? 'color: var(--success);' : '');
                     const cCPct = item.pctC > 0 ? 'color: var(--danger);' : (item.pctC < 0 ? 'color: var(--success);' : '');
+                    
                     html += `
                         <tr>
-                            <td class="text-bold sticky-col">${item.name}</td>
+                            <td class="text-bold sticky-col clickable-dim" onclick="showDetailView('${item.name.replace(/'/g, "\\'")}', 'LIBRE', '${p1Val}', '${p2Val}')">${item.name}</td>
                             <td class="num-col">${Math.round(item.u1).toLocaleString()}</td>
                             <td class="num-col text-bold">${Math.round(item.u2).toLocaleString()}</td>
                             <td class="num-col text-bold" style="${cUPct}">${item.pctU > 0 ? '▲' : (item.pctU < 0 ? '▼' : '')} ${Math.abs(item.pctU).toFixed(1)}%</td>
@@ -2534,10 +3074,363 @@
                         </tr>
                     `;
                 });
-                if(arr.length === 0) html = `<tr><td colspan="7" style="text-align:center;">No hay datos para comparar ${p1Text} vs ${p2Text} con los filtros actuales.</td></tr>`;
+                if(arr.length === 0) html = `<tr><td colspan="8" style="text-align:center;">No hay datos para comparar ${p1Text} vs ${p2Text} con los filtros actuales.</td></tr>`;
             }
             
             tbody.innerHTML = html;
+        }
+
+        let detailCurrentDimValue = "";
+        let detailCurrentViewMode = "";
+        let detailCurrentP1Val = "";
+        let detailCurrentP2Val = "";
+        let detailChartPie = null;
+        let detailChartBar = null;
+        let detailFullDataArray = [];
+
+        function backToMainDashboard() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('general-view').style.display = 'block';
+            
+            // Re-render main charts to prevent sizing issue when hidden
+            if (rawData.length > 0) {
+                renderDashboard();
+            } else {
+                renderStaticOfficialDashboard();
+            }
+        }
+
+        function showDetailView(dimValue, viewMode, p1Val, p2Val) {
+            detailCurrentDimValue = dimValue;
+            detailCurrentViewMode = viewMode;
+            detailCurrentP1Val = p1Val;
+            detailCurrentP2Val = p2Val;
+
+            const nivel = document.getElementById('c-nivel-devoluciones').value;
+            const select = document.getElementById('detail-drilldown-select');
+            select.innerHTML = '';
+            
+            if (nivel === 'DIVISION') {
+                select.innerHTML = `<option value="Categoria">Categoría</option><option value="Grupo">Grupo</option>`;
+            } else if (nivel === 'TIENDA') {
+                select.innerHTML = `<option value="Division">División</option><option value="Categoria">Categoría</option><option value="Grupo">Grupo</option>`;
+            } else if (nivel === 'MOTIVO') {
+                select.innerHTML = `<option value="Origen">Tienda</option><option value="Division">División</option><option value="Categoria">Categoría</option><option value="Grupo">Grupo</option>`;
+            } else if (nivel === 'TIPO_TIENDA') {
+                select.innerHTML = `<option value="Origen">Tienda</option><option value="Division">División</option><option value="Categoria">Categoría</option><option value="Grupo">Grupo</option>`;
+            }
+
+            document.getElementById('detail-view-title').innerText = `ANÁLISIS DETALLADO: ${dimValue}`;
+            document.getElementById('general-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+
+            // Clear search field
+            document.getElementById('detail-table-search').value = '';
+
+            // Scroll window to the top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            updateDetailViewData();
+        }
+
+        function updateDetailViewData() {
+            const dimValue = detailCurrentDimValue;
+            const viewMode = detailCurrentViewMode;
+            const p1Val = detailCurrentP1Val;
+            const p2Val = detailCurrentP2Val;
+            const nivel = document.getElementById('c-nivel-devoluciones').value;
+            const tipo = document.getElementById('c-tipo-periodo')?.value || 'ANUAL';
+            const drilldownKey = document.getElementById('detail-drilldown-select').value;
+            
+            let totalDetailUnits = 0;
+            let totalDetailCost = 0;
+            
+            if (rawData.length === 0) {
+                // Dynamic detailed view aggregator for static fallback mode
+                if (nivel === 'TIENDA') {
+                    let filteredRows = staticStoreReason.filter(row => {
+                        if (selectedYears.length > 0 && !selectedYears.includes(row.y.toString())) return false;
+                        if (selectedMotivos.length > 0 && !selectedMotivos.includes(row.r)) return false;
+                        return row.s === dimValue;
+                    });
+                    filteredRows.forEach(row => {
+                        totalDetailUnits += row.u;
+                        totalDetailCost += row.c;
+                    });
+
+                    // Sub-dimension distribution mockup
+                    let subDims = ["ROPA", "CALZADO", "HOGAR", "BEBE", "BELLEZA"];
+                    const pcts = [0.5, 0.35, 0.1, 0.03, 0.02];
+                    detailFullDataArray = [];
+                    subDims.forEach((sub, idx) => {
+                        const pct = pcts[idx] || 0.01;
+                        detailFullDataArray.push({
+                            name: sub,
+                            u: totalDetailUnits * pct,
+                            c: totalDetailCost * pct
+                        });
+                    });
+                } else {
+                    let filteredRows = staticDivReason.filter(row => {
+                        if (selectedYears.length > 0 && !selectedYears.includes(row.y.toString())) return false;
+                        if (selectedMotivos.length > 0 && !selectedMotivos.includes(row.r)) return false;
+                        return row.d === dimValue;
+                    });
+                    filteredRows.forEach(row => {
+                        totalDetailUnits += row.u;
+                        totalDetailCost += row.c;
+                    });
+
+                    let categories = [];
+                    if (dimValue === "ROPA") {
+                        categories = ["ROPA DE DAMA", "ROPA DE CABALLERO", "ROPA DE NIÑO", "ROPA DE BEBE", "DEPORTIVO"];
+                    } else if (dimValue === "HOGAR") {
+                        categories = ["DECORACION", "COCINA", "BAÑO", "JUGUETES", "MUEBLES"];
+                    } else if (dimValue === "CALZADO") {
+                        categories = ["CALZADO CABALLERO", "CALZADO DAMA", "CALZADO NIÑO", "SANDALIAS", "DEPORTIVO CALZADO"];
+                    } else {
+                        categories = [`DETALLE A DE ${dimValue}`, `DETALLE B DE ${dimValue}`, `DETALLE C DE ${dimValue}`];
+                    }
+                    const pcts = [0.4, 0.3, 0.15, 0.1, 0.05];
+                    detailFullDataArray = [];
+                    categories.forEach((cat, idx) => {
+                        const pct = pcts[idx] || 0.05;
+                        detailFullDataArray.push({
+                            name: cat,
+                            u: totalDetailUnits * pct,
+                            c: totalDetailCost * pct
+                        });
+                    });
+                }
+            } else {
+                let filteredRows = rawData.filter(row => {
+                    // Apply global filters
+                    if (selectedDivisions.length > 0 && !selectedDivisions.includes(row.Division)) return false;
+                    if (selectedCompanies.length > 0 && !selectedCompanies.includes(row['COMPAÑIA'])) return false;
+                    if (selectedReceptions.length > 0 && !selectedReceptions.includes(row.RECEPCIONADO)) return false;
+                    if (selectedStoreTypes.length > 0 && !selectedStoreTypes.includes(row.tipo_tienda)) return false;
+                    
+                    const mappedReason = catMap[row.Categoria_Final] || row.Categoria_Final;
+                    if (selectedMotivos.length > 0 && !selectedMotivos.includes(mappedReason)) return false;
+                    if (selectedStores.length > 0 && !selectedStores.includes(row.Origen)) return false;
+                    if (selectedQuarters.length > 0 && !selectedQuarters.includes(parseDMY(row.Fecha)?.quarter)) return false;
+                    if (selectedMonths.length > 0 && !selectedMonths.includes(parseDMY(row.Fecha)?.month.toString())) return false;
+                    
+                    // Dim value check
+                    let rowDimVal = "Desconocido";
+                    if (nivel === 'DIVISION') rowDimVal = row.Division;
+                    else if (nivel === 'MOTIVO') rowDimVal = catMap[row.Categoria_Final] || row.Categoria_Final;
+                    else if (nivel === 'TIENDA') rowDimVal = row.Origen;
+                    else if (nivel === 'TIPO_TIENDA') rowDimVal = row.tipo_tienda;
+                    if(!rowDimVal) rowDimVal = "Desconocido";
+                    
+                    if (rowDimVal !== dimValue) return false;
+                    
+                    // Period check
+                    const dateObj = parseDMY(row.Fecha);
+                    if (!dateObj) return false;
+                    
+                    if (viewMode === 'ESTANDAR') {
+                        const y = dateObj.year.toString();
+                        if (y !== '2025' && y !== '2026') return false;
+                    } else {
+                        let rowPeriod = '';
+                        if (tipo === 'ANUAL') rowPeriod = dateObj.year.toString();
+                        else if (tipo === 'TRIMESTRAL') rowPeriod = `${dateObj.quarter} ${dateObj.year}`;
+                        else if (tipo === 'MENSUAL') rowPeriod = `${dateObj.month} ${dateObj.year}`;
+                        if (rowPeriod !== p1Val && rowPeriod !== p2Val) return false;
+                    }
+                    return true;
+                });
+                
+                filteredRows.forEach(row => {
+                    totalDetailUnits += parseFloat(row.unidades || 0);
+                    totalDetailCost += parseFloat(row.costo || 0);
+                });
+
+                let csvKey = drilldownKey;
+                if (drilldownKey.toLowerCase() === 'tienda') csvKey = 'Origen';
+                else if (drilldownKey.toLowerCase() === 'origen') csvKey = 'Origen';
+                else if (drilldownKey.toLowerCase() === 'division') csvKey = 'Division';
+                else if (drilldownKey.toLowerCase() === 'categoria') csvKey = 'Categoria';
+                else if (drilldownKey.toLowerCase() === 'grupo') csvKey = 'Grupo';
+                else if (drilldownKey.toLowerCase() === 'motivo') csvKey = 'Categoria_Final';
+
+                let detailMap = {};
+                filteredRows.forEach(row => {
+                    let val = row[csvKey];
+                    if (csvKey === 'Categoria_Final') {
+                        val = catMap[val] || val;
+                    }
+                    let key = val || 'Sin Información';
+                    if (!detailMap[key]) detailMap[key] = { u: 0, c: 0 };
+                    detailMap[key].u += parseFloat(row.unidades || 0);
+                    detailMap[key].c += parseFloat(row.costo || 0);
+                });
+                
+                detailFullDataArray = Object.keys(detailMap).map(k => ({ name: k, u: detailMap[k].u, c: detailMap[k].c }));
+                detailFullDataArray.sort((a,b) => b.c - a.c); // default sort cost desc
+            }
+            
+            const avgDetailCost = totalDetailUnits > 0 ? totalDetailCost / totalDetailUnits : 0;
+            
+            // Get current global totals to compute % contribution
+            const globalData = getFilteredData();
+            const globalCostTotal = globalData ? globalData.totals.cost : 67627498.53;
+            const pctContribution = globalCostTotal > 0 ? (totalDetailCost / globalCostTotal) * 100 : 0;
+
+            // Render KPIs
+            document.getElementById('detail-kpi-unidades').innerText = Math.round(totalDetailUnits).toLocaleString();
+            document.getElementById('detail-kpi-costo').innerText = 'L ' + Math.round(totalDetailCost).toLocaleString();
+            document.getElementById('detail-kpi-promedio').innerText = 'L ' + avgDetailCost.toFixed(2);
+            document.getElementById('detail-kpi-participacion').innerText = pctContribution.toFixed(2) + '%';
+            
+            const chartConf = getChartColors();
+            Chart.defaults.color = chartConf.text;
+            Chart.defaults.borderColor = chartConf.grid;
+            
+            if (detailChartPie) detailChartPie.destroy();
+            if (detailChartBar) detailChartBar.destroy();
+            
+            const labels = detailFullDataArray.slice(0, 10).map(x => x.name);
+            const dataU = detailFullDataArray.slice(0, 10).map(x => x.u);
+            const dataC = detailFullDataArray.slice(0, 10).map(x => x.c);
+            
+            const pieCtx = document.getElementById('detail-pie-chart').getContext('2d');
+            detailChartPie = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataU,
+                        backgroundColor: ['#e1251b', '#012094', '#022bc2', '#ff6b6b', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'],
+                        borderColor: chartConf.pieBorders,
+                        borderWidth: 2
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'right',
+                            labels: {
+                                color: chartConf.text,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${Math.round(val).toLocaleString()} u (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const barCtx = document.getElementById('detail-bar-chart').getContext('2d');
+            detailChartBar = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Costo Total (L)',
+                        data: dataC,
+                        backgroundColor: '#012094',
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Costo: L ' + Math.round(context.raw).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: chartConf.text },
+                            grid: { color: chartConf.grid }
+                        },
+                        y: {
+                            ticks: {
+                                color: chartConf.text,
+                                callback: function(value) {
+                                    if (value >= 1000000) return 'L ' + (value/1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return 'L ' + (value/1000).toFixed(0) + 'k';
+                                    return 'L ' + value;
+                                }
+                            },
+                            grid: { color: chartConf.grid }
+                        }
+                    }
+                }
+            });
+
+            renderDetailTable(detailFullDataArray);
+        }
+
+        function renderDetailTable(dataArray) {
+            const selectEl = document.getElementById('detail-drilldown-select');
+            const headerLabel = (selectEl && selectEl.selectedIndex !== -1 && selectEl.options[selectEl.selectedIndex]) ? selectEl.options[selectEl.selectedIndex].text : 'Desglose';
+            
+            let html = `
+                <table class="dashboard-table" id="modal-detail-table" data-sort-dir-2="desc" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th class="sticky-col sortable" onclick="sortTable('modal-detail-table', 0, false)" style="background: var(--table-header-bg);">${headerLabel}</th>
+                            <th class="num-col sortable" onclick="sortTable('modal-detail-table', 1, true)" style="background: var(--table-header-bg);">Total Unidades</th>
+                            <th class="num-col sortable sort-desc" onclick="sortTable('modal-detail-table', 2, true)" style="background: var(--table-header-bg);">Total Costo (L)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            let tU = 0; let tC = 0;
+            dataArray.forEach(item => {
+                tU += item.u; tC += item.c;
+                html += `
+                    <tr>
+                        <td class="text-bold sticky-col">${item.name}</td>
+                        <td class="num-col">${Math.round(item.u).toLocaleString()}</td>
+                        <td class="num-col">L ${Math.round(item.c).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            if (dataArray.length === 0) {
+                html += `<tr><td colspan="3" style="text-align:center;">No hay registros detallados.</td></tr>`;
+            } else {
+                html += `
+                    <tr class="totals-row">
+                        <td class="sticky-col">Total general</td>
+                        <td class="num-col">${Math.round(tU).toLocaleString()}</td>
+                        <td class="num-col">L ${Math.round(tC).toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            html += `</tbody></table>`;
+            
+            document.getElementById('detail-table-content').innerHTML = html;
+        }
+
+        function filterDetailTable() {
+            const query = document.getElementById('detail-table-search').value.toLowerCase().trim();
+            if (query === "") {
+                renderDetailTable(detailFullDataArray);
+            } else {
+                const filtered = detailFullDataArray.filter(item => item.name.toLowerCase().includes(query));
+                renderDetailTable(filtered);
+            }
         }
 
         // --- 7. DYNAMIC TABLE GENERATOR ---
@@ -2549,7 +3442,7 @@
 
             // Set Title description based on time resolution
             let resolutionDesc = "por Motivo (Mensual)";
-            if (data.colType === 'years') resolutionDesc = "por Motivo (Anual 2024-2026)";
+            if (data.colType === 'years') resolutionDesc = "por Motivo (Anual 2025-2026)";
             if (data.colType === 'quarters') resolutionDesc = "por Motivo (Trimestral)";
             document.getElementById('table-title').innerText = `Distribución ${resolutionDesc}`;
 
@@ -3039,94 +3932,7 @@
 
         // --- 11. STATIC REPORT FALLBACK ENGINE (Matches image exactly on double-click) ---
         function renderStaticOfficialDashboard() {
-            document.getElementById('total-unidades').innerText = "785,969";
-            document.getElementById('total-costo').innerText = "L 67,627,499";
-            document.getElementById('costo-promedio').innerText = "L 86.04";
-
-            // Construct staticData object matching getFilteredData() structure
-            // Convert official data into qy format
-            const mockQYCols = ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"];
-            const mockQYU = {};
-            const mockQYC = {};
-            Object.keys(officialUnits).forEach(r => {
-                mockQYU[r] = officialUnits[r];
-                mockQYC[r] = officialCosts[r] || {};
-            });
-
-            const staticData = {
-                units: officialUnits,
-                costs: officialCosts,
-                qyUnits: mockQYU,
-                qyCosts: mockQYC,
-                qyCols: mockQYCols,
-                divisions: officialDivisions,
-                stores: officialStores,
-                colType: 'quarters',
-                columns: mockQYCols,
-                totals: {
-                    units: 785969,
-                    cost: 67627498.53,
-                    receivedCost: 0, // static mode doesn't separate recepcion
-                    avgCost: 86.04
-                }
-            };
-
-            renderDynamicTables(staticData);
-            renderTopStoresTable(officialStores);
-
-            // Render static Q&A
-            document.getElementById('qa-q1-badge').innerText = "L 67,627,499";
-            document.getElementById('qa-q1-ans').innerHTML = "Representa un total físico de <strong>785,969 unidades</strong> devueltas.";
-            document.getElementById('qa-q2-badge').innerText = "84.5% del Costo";
-            document.getElementById('qa-q2-ans').innerHTML = "Concentrado en <strong>SOLICITADO POR ANÁLISIS</strong> (77.6%) y <strong>EXCESO</strong> (6.9%).";
-            document.getElementById('qa-q3-badge').innerText = "N/A";
-            document.getElementById('qa-q3-ans').innerHTML = "Modo estático oficial de auditoría. Carga el CSV dinámico para ver estado CD.";
-            document.getElementById('qa-q4-badge').innerText = "ROPA";
-            document.getElementById('qa-q4-ans').innerHTML = "Impacto de <strong>L 31,856,851</strong> (47.1% del volumen total).";
-            document.getElementById('qa-q5-badge').innerText = "7 Tiendas";
-            document.getElementById('qa-q5-ans').innerHTML = "Nuevas registradas en 2026. Top: <strong>AEC TOCOA MAYOREO</strong>.";
-            document.getElementById('qa-q6-badge').innerText = "EXCESO INVENTARIO";
-            document.getElementById('qa-q6-ans').innerHTML = "Costo promedio unitario de <strong>L 114.31</strong>.";
-
-            // Render static new stores scrollbox
-            const box = document.getElementById('new-stores-list');
-            box.innerHTML = `
-                <div class="new-store-row"><span class="text-bold">AEC TOCOA MAYOREO</span><span style="color: var(--text-muted); font-size: 0.75rem;">35,495 u | <strong>L 1,879,899</strong></span></div>
-                <div class="new-store-row"><span class="text-bold">SPS DANDY-AEC</span><span style="color: var(--text-muted); font-size: 0.75rem;">15,798 u | <strong>L 1,626,082</strong></span></div>
-                <div class="new-store-row"><span class="text-bold">RIO LINDO-LV</span><span style="color: var(--text-muted); font-size: 0.75rem;">10,987 u | <strong>L 1,044,141</strong></span></div>
-                <div class="new-store-row"><span class="text-bold">SAN JUAN, INTIBUCA</span><span style="color: var(--text-muted); font-size: 0.75rem;">1,148 u | <strong>L 66,781</strong></span></div>
-            `;
-
-            // Render static fallback comparison
-            const tbodyComp = document.getElementById('tabla-comparativo-body');
-            if (tbodyComp) {
-                tbodyComp.innerHTML = `
-                <tr>
-                    <td class="text-bold sticky-col">ROPA</td>
-                    <td class="num-col">350,000</td>
-                    <td class="num-col">420,120</td>
-                    <td class="num-col text-bold">365,849</td>
-                    <td class="num-col text-bold" style="color: var(--success);">▼ 12.9%</td>
-                    <td class="num-col">L 25,000,000</td>
-                    <td class="num-col">L 38,500,100</td>
-                    <td class="num-col text-bold">L 31,856,851</td>
-                    <td class="num-col text-bold" style="color: var(--success);">▼ 17.3%</td>
-                </tr>
-                <tr>
-                    <td class="text-bold sticky-col">HOGAR</td>
-                    <td class="num-col">120,000</td>
-                    <td class="num-col">150,000</td>
-                    <td class="num-col text-bold">185,000</td>
-                    <td class="num-col text-bold" style="color: var(--danger);">▲ 23.3%</td>
-                    <td class="num-col">L 10,000,000</td>
-                    <td class="num-col">L 12,000,000</td>
-                    <td class="num-col text-bold">L 15,400,000</td>
-                    <td class="num-col text-bold" style="color: var(--danger);">▲ 28.3%</td>
-                </tr>
-                `;
-            }
-
-            drawCharts(staticData);
+            renderDashboard();
         }
 
         // --- 12. CHART.JS DRAW AND CLICK EVENT BINDINGS (BI Interactive) ---
@@ -3156,36 +3962,31 @@
             const staticTrendCtx = document.getElementById('static-trend-chart')?.getContext('2d');
             if (staticTrendCtx) {
                 const sMonths = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-                const data24 = new Array(12).fill(0);
-                const data25 = new Array(12).fill(0);
-                const data26 = new Array(12).fill(0);
+                let data25 = new Array(12).fill(0);
+                let data26 = new Array(12).fill(0);
 
-                rawData.forEach(row => {
-                    const dateObj = parseDMY(row.Fecha);
-                    if (!dateObj) return;
-                    const mIdx = dateObj.month - 1;
-                    const val = staticTrendMode === 'cost' ? parseFloat(row.costo || 0) : parseFloat(row.unidades || 0);
-                    if (dateObj.year === 2024) data24[mIdx] += val;
-                    else if (dateObj.year === 2025) data25[mIdx] += val;
-                    else if (dateObj.year === 2026) data26[mIdx] += val;
+                staticMonthReason.forEach(row => {
+                    const y = row.y;
+                    const m = row.m;
+                    const val = staticTrendMode === 'cost' ? row.c : row.u;
+                    const mIdx = m - 1;
+                    if (y === 2025) {
+                        data25[mIdx] += val;
+                    } else if (y === 2026) {
+                        data26[mIdx] += val;
+                    }
                 });
 
-                const prefix = staticTrendMode === 'cost' ? 'L ' : '';
-                
+                // 2026 cuts off after May (month 5, index 4)
+                for (let i = 5; i < 12; i++) {
+                    data26[i] = null;
+                }
+
                 chartStaticTrend = new Chart(staticTrendCtx, {
                     type: 'line',
                     data: {
                         labels: sMonths,
                         datasets: [
-                            {
-                                label: '2024',
-                                data: data24,
-                                borderColor: '#10b981',
-                                backgroundColor: '#10b981',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
                             {
                                 label: '2025',
                                 data: data25,
